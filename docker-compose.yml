@@ -1,0 +1,23 @@
+services:
+  pdf-censor:
+    build: .
+    container_name: pdf-censor
+    ports:
+      - "5000:5000"
+    volumes:
+      - pdf_uploads:/app/uploads
+      - pdf_outputs:/app/outputs
+    environment:
+      - FLASK_ENV=production
+      - MAX_UPLOAD_MB=50
+      - SECRET_KEY=cambia_esta_clave_secreta_en_produccion
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  pdf_uploads:
+  pdf_outputs:
