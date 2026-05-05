@@ -9,7 +9,7 @@ services:
       - pdf_outputs:/app/outputs
     environment:
       - FLASK_ENV=production
-      - MAX_UPLOAD_MB=50
+      - MAX_UPLOAD_MB=250
       - SECRET_KEY=cambia_esta_clave_secreta_en_produccion
     restart: unless-stopped
     healthcheck:
