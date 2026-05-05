@@ -474,6 +474,7 @@
 // ─────────────────── State ───────────────────
 const state = {
   fileId: null,
+  originalName: 'documento',
   pageCount: 0,
   currentPage: 0,
   mode: 'rect',           // 'rect' | 'search'
@@ -546,6 +547,9 @@ clearBtn.addEventListener('click', resetAll);
 
 async function uploadFile(file) {
   if (!file.name.endsWith('.pdf')) { toast('Solo se aceptan archivos PDF.', 'error'); return; }
+
+  // Guarda el nombre original sin la extensión para usarlo luego
+  state.originalName = file.name.replace(/\.[^/.]+$/, "");
 
   const fd = new FormData();
   fd.append('file', file);
@@ -928,7 +932,9 @@ exportBtn.addEventListener('click', async () => {
     const blob = await res.blob();
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
-    a.download = 'documento_censurado.pdf';
+
+    const nombreFinal = `${state.originalName}_censurado.pdf`;
+    a.download = nombreFinal;
     a.href = url;
     a.click();
     URL.revokeObjectURL(url);
