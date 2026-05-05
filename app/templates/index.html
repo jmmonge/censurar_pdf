@@ -685,28 +685,79 @@ document.querySelectorAll('.color-opt').forEach(opt => {
 });
 
 // ─────────────────── Draw on canvas ───────────────────
+// Actualiza el evento mousedown existente
 drawCanvas.addEventListener('mousedown', e => {
-  if (state.mode !== 'rect' || !state.fileId) return;
-  state.drawing = true;
+  if (!state.fileId) return;
+
   const r = drawCanvas.getBoundingClientRect();
+  const mouseX = (e.clientX - r.left) / state.pageScale;
+  const mouseY = (e.clientY - r.top) / state.pageScale;
+
+  // --- NUEVA LÓGICA DE SELECCIÓN/ELIMINACIÓN ---
+  // Buscamos si el clic ha caído dentro de algún rectángulo existente en la página actual
+  const clickedIdx = state.redactions.findIndex(red => {
+    if (red.page !== state.currentPage) return false;
+    const [x0, y0, x1, y1] = red.rect;
+    return mouseX >= x0 && mouseX <= x1 && mouseY >= y0 && mouseY <= y1;
+  });
+
+  if (clickedIdx !== -1) {
+    // Si se hace clic con el botón derecho o Alt + Click, lo borramos
+    // O simplemente lo borramos y cancelamos el dibujo de uno nuevo
+    if (confirm("¿Eliminar este recuadro de censura?")) {
+        state.redactions.splice(clickedIdx, 1);
+        redrawOverlays();
+        renderRedactionList();
+        toast('Censura eliminada', 'info');
+        return; // Detenemos aquí para que no empiece a dibujar uno nuevo
+    }
+  }
+  // --- FIN LÓGICA DE SELECCIÓN ---
+
+  if (state.mode !== 'rect') return;
+  
+  state.drawing = true;
   state.startX = e.clientX - r.left;
   state.startY = e.clientY - r.top;
 });
 
 drawCanvas.addEventListener('mousemove', e => {
-  if (!state.drawing) return;
   const r = drawCanvas.getBoundingClientRect();
   const mx = e.clientX - r.left;
   const my = e.clientY - r.top;
 
-  redrawOverlays();
-  const [cr, cg, cb] = state.redactColor;
-  dCtx.fillStyle = `rgba(${Math.round(cr*255)},${Math.round(cg*255)},${Math.round(cb*255)},0.55)`;
-  dCtx.strokeStyle = `rgb(${Math.round(cr*255)},${Math.round(cg*255)},${Math.round(cb*255)})`;
-  dCtx.lineWidth = 1.5;
-  const w = mx - state.startX, h = my - state.startY;
-  dCtx.fillRect(state.startX, state.startY, w, h);
-  dCtx.strokeRect(state.startX, state.startY, w, h);
+  // 1. Lógica para el cursor (puntero o cruz)
+  if (!state.drawing) {
+    const mouseX_scaled = mx / state.pageScale;
+    const mouseY_scaled = my / state.pageScale;
+    const isOver = state.redactions.some(red => {
+      if (red.page !== state.currentPage) return false;
+      const [x0, y0, x1, y1] = red.rect;
+      return mouseX_scaled >= x0 && mouseX_scaled <= x1 && mouseY_scaled >= y0 && mouseY_scaled <= y1;
+    });
+    drawCanvas.style.cursor = isOver ? 'pointer' : 'crosshair';
+    return; 
+  }
+
+  // 2. Lógica de dibujo mientras se arrastra
+  if (state.drawing) {
+    redrawOverlays(); // Limpia y dibuja las existentes
+    
+    const [cr, cg, cb] = state.redactColor;
+    const w = mx - state.startX;
+    const h = my - state.startY;
+
+    // Dibujamos el relleno semi-transparente
+    dCtx.fillStyle = `rgba(${Math.round(cr*255)},${Math.round(cg*255)},${Math.round(cb*255)}, 0.4)`;
+    dCtx.fillRect(state.startX, state.startY, w, h);
+
+    // Dibujamos el contorno para que se vea bien el borde
+    dCtx.strokeStyle = `rgb(${Math.round(cr*255)},${Math.round(cg*255)},${Math.round(cb*255)})`;
+    dCtx.lineWidth = 2;
+    dCtx.setLineDash([5, 5]); // Opcional: hace que el borde sea punteado mientras dibujas
+    dCtx.strokeRect(state.startX, state.startY, w, h);
+    dCtx.setLineDash([]); // Resetear el estilo de línea
+  }
 });
 
 drawCanvas.addEventListener('mouseup', e => {
@@ -840,20 +891,21 @@ clearAllBtn.addEventListener('click', () => {
 // ─────────────────── Export ───────────────────
 exportBtn.addEventListener('click', async () => {
   if (!state.fileId) return;
-  if (!state.redactions.length && !state.searchTerms.length) {
+  if (!state.redactions.length) {
     toast('No hay censuras definidas', 'error'); return;
   }
 
   exportBtn.disabled = true;
   exportBtn.innerHTML = '<div class="spinner"></div> Procesando…';
 
-  // Only send manual rect redactions (search terms handled via searchTerms array)
-  const manualRects = state.redactions
-    .filter(r => !r.fromSearch)
-    .map(r => ({ page: r.page, rect: r.rect, color: r.color }));
-
-  // Unique search terms
-  const terms = [...new Set(state.searchTerms)];
+  // ENVIAR SOLO LOS RECUADROS VISIBLES
+  // Filtramos todas las redacciones (sean manuales o de búsqueda) 
+  // para que el servidor las aplique una a una por coordenadas.
+  const allRects = state.redactions.map(r => ({ 
+    page: r.page, 
+    rect: r.rect, 
+    color: r.color 
+  }));
 
   try {
     const res = await fetch('/api/censor', {
@@ -861,8 +913,8 @@ exportBtn.addEventListener('click', async () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         file_id: state.fileId,
-        redactions: manualRects,
-        search_terms: terms,
+        redactions: allRects,
+        search_terms: [], // ENVIAR VACÍO para evitar que el servidor genere recuadros borrados
         redact_metadata: clearMeta.checked,
       }),
     });
@@ -876,9 +928,7 @@ exportBtn.addEventListener('click', async () => {
     const blob = await res.blob();
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
-    const cd   = res.headers.get('Content-Disposition') || '';
-    const match = cd.match(/filename="(.+?)"/);
-    a.download = match ? match[1] : 'censurado.pdf';
+    a.download = 'documento_censurado.pdf';
     a.href = url;
     a.click();
     URL.revokeObjectURL(url);
@@ -887,7 +937,7 @@ exportBtn.addEventListener('click', async () => {
     toast('Error de red al exportar', 'error');
   } finally {
     exportBtn.disabled = false;
-    exportBtn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Descargar PDF censurado`;
+    exportBtn.innerHTML = `... (tu svg original) ... Descargar PDF censurado`;
   }
 });
 </script>
