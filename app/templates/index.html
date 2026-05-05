@@ -355,7 +355,7 @@
           <line x1="12" y1="3" x2="12" y2="15"/>
         </svg>
         <p>Arrastra tu PDF aquí o<br/><strong>haz clic para seleccionar</strong></p>
-        <p style="margin-top:6px;font-size:.75rem;">Máximo 50 MB</p>
+        <p style="margin-top:6px;font-size:.75rem;">Máximo 250 MB</p>
         <input type="file" id="fileInput" accept=".pdf" style="display:none"/>
       </div>
       <div class="file-info mt-8" id="fileInfo">
@@ -593,7 +593,7 @@ function resetDropZone() {
       <line x1="12" y1="3" x2="12" y2="15"/>
     </svg>
     <p>Arrastra tu PDF aquí o<br/><strong>haz clic para seleccionar</strong></p>
-    <p style="margin-top:6px;font-size:.75rem;">Máximo 50 MB</p>
+    <p style="margin-top:6px;font-size:.75rem;">Máximo 250 MB</p>
     <input type="file" id="fileInput" accept=".pdf" style="display:none"/>`;
   document.getElementById('fileInput').addEventListener('change', () => {
     const f = document.getElementById('fileInput').files[0];
