@@ -212,7 +212,6 @@ def censor_pdf():
     file_id = data.get("file_id", "")
     redactions = data.get("redactions", [])
     search_terms = data.get("search_terms", [])
-    redact_metadata = data.get("redact_metadata", True)
 
     matches_list = list(app.config["UPLOAD_FOLDER"].glob(f"{file_id}_*"))
     if not matches_list:
@@ -240,10 +239,30 @@ def censor_pdf():
         for page in doc:
             page.apply_redactions(images=fitz.PDF_REDACT_IMAGE_PIXELS)
 
-        if redact_metadata:
-            doc.set_metadata({"creator": "PDF Censor", "producer": "PDF Censor"})
+       # 1. Limpiar el diccionario de metadatos estándar
+            empty_metadata = {
+                "title": "",
+                "author": "",
+                "subject": "",
+                "keywords": "",
+                "creator": "",
+                "producer": "",
+                "creationDate": "",
+                "modDate": ""
+            }
+            doc.set_metadata(empty_metadata)
+            
+            # 2. Eliminar metadatos XML (XMP) que suelen persistir
+            doc.del_xml_metadata()
 
-        doc.save(str(output_path), garbage=4, deflate=True, clean=True)
+        # 3. Guardado optimizado para eliminar rastros de versiones anteriores
+        doc.save(
+            str(output_path), 
+            garbage=4, 
+            deflate=True, 
+            clean=True, 
+            linear=True  # Opcional: reorganiza el archivo para visualización rápida y limpieza
+        )
         doc.close()
 
         original_name = upload_path.name.replace(file_id + "_", "")
