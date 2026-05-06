@@ -12,6 +12,8 @@ from werkzeug.utils import secure_filename
 import fitz  # PyMuPDF
 import pytesseract
 from pdf2image import convert_from_path
+import unicodedata
+import re
 
 # ─────────────────────────── Configuración ───────────────────────────
 app = Flask(__name__)
@@ -55,6 +57,17 @@ def clean_old_files(folder_path: Path):
                 except Exception as e:
                     print(f"Error borrando archivo viejo {f.name}: {e}")
 
+def normalize_text(text: str) -> str:
+    """Elimina acentos, puntos, guiones y convierte a minúsculas."""
+    if not text:
+        return ""
+    # Convertir a minúsculas y normalizar caracteres Unicode (NFD separa letras de acentos)
+    text = text.lower()
+    text = "".join(c for c in unicodedata.normalize('NFD', text) 
+                   if unicodedata.category(c) != 'Mn')
+    # Eliminar puntos y guiones usando expresiones regulares
+    text = re.sub(r'[.\-]', '', text)
+    return text.strip()
 
 # ─────────────────────────── Rutas API ───────────────────────────────
 @app.route("/health")
@@ -140,9 +153,12 @@ def preview_page(file_id: str, page_num: int):
 def search_text():
     data = request.json
     file_id = data.get('file_id')
-    search_term = data.get('text', '').lower()
+    # Normalizamos la cadena que viene de la interfaz
+    search_term = normalize_text(data.get('text', ''))
     
-    # Buscamos el archivo que empiece por el ID (ya que el nombre real varía)
+    if not search_term:
+        return jsonify({"count": 0, "matches": []})
+
     matches = list(app.config["UPLOAD_FOLDER"].glob(f"{file_id}_*"))
     if not matches:
         return jsonify({"error": "Archivo no encontrado"}), 404
@@ -153,16 +169,20 @@ def search_text():
 
     for page_num in range(len(doc)):
         page = doc[page_num]
-        text_instances = page.search_for(search_term)
         
-        if text_instances:
-            for inst in text_instances:
+        # --- Opción A: Texto Digital ---
+        # Extraemos palabras con sus coordenadas para poder normalizarlas una a una
+        words = page.get_text("words") # [x0, y0, x1, y1, "word", block_no, line_no, word_no]
+        for w in words:
+            clean_word = normalize_text(w[4])
+            if search_term in clean_word:
                 all_matches.append({
                     "page": page_num,
-                    "rect": [inst.x0, inst.y0, inst.x1, inst.y1]
+                    "rect": [w[0], w[1], w[2], w[3]]
                 })
-        else:
-            # OCR si no hay texto digital
+        
+        # --- Opción B: OCR (si no hubo resultados o para reforzar) ---
+        if not all_matches:
             images = convert_from_path(str(pdf_path), first_page=page_num+1, last_page=page_num+1)
             if images:
                 img = images[0]
@@ -171,7 +191,9 @@ def search_text():
                 pdf_w, pdf_h = page.rect.width, page.rect.height
                 
                 for i, word_text in enumerate(ocr_data['text']):
-                    if search_term in word_text.lower() and word_text.strip():
+                    # Normalizamos el texto encontrado por el OCR
+                    clean_ocr_word = normalize_text(word_text)
+                    if search_term in clean_ocr_word and clean_ocr_word:
                         all_matches.append({
                             "page": page_num,
                             "rect": [
@@ -183,7 +205,7 @@ def search_text():
                         })
     doc.close()
     return jsonify({"count": len(all_matches), "matches": all_matches})
-
+    
 @app.route("/api/censor", methods=["POST"])
 def censor_pdf():
     data = request.get_json(silent=True) or {}

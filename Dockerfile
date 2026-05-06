@@ -9,12 +9,17 @@ RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
     python3-venv \
+    # Dependencias críticas para PyMuPDF (fitz) y visualización
     libmupdf-dev \
     mupdf-tools \
-    poppler-utils \
+    # Dependencias para OCR y procesamiento de imágenes
     tesseract-ocr \
     tesseract-ocr-spa \
     tesseract-ocr-eng \
+    libtesseract-dev \
+    # Poppler es vital para pdf2image (conversión a imagen para OCR)
+    poppler-utils \
+    # Librerías necesarias para OpenCV/Pillow si las usas
     libgl1 \
     libglib2.0-0 \
     curl \
@@ -24,11 +29,12 @@ RUN apt-get update && apt-get install -y \
 # Crear directorio de la app
 WORKDIR /app
 
-# Crear entorno virtual
+# Crear entorno virtual (Recomendado en Ubuntu 24.04 para evitar conflictos con el sistema)
 RUN python3 -m venv /venv
 ENV PATH="/venv/bin:$PATH"
 
 # Copiar e instalar dependencias Python
+# Asegúrate de que en requirements.txt estén: pytesseract, pillow y pdf2image
 COPY app/requirements.txt .
 RUN pip install --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
@@ -38,6 +44,9 @@ COPY app/ .
 
 # Crear directorios para uploads y outputs
 RUN mkdir -p uploads outputs && chmod 777 uploads outputs
+
+# Configurar variables de entorno para Tesseract (opcional, ayuda a localizar datos)
+ENV TESSDATA_PREFIX=/usr/share/tesseract-ocr/5/tessdata/
 
 # Exponer el puerto
 EXPOSE 5000
