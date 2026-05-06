@@ -228,19 +228,41 @@ def search_in_ocr_pdf(file_id: str, pdf_path: Path, search_term: str) -> list:
         print(f"[SEARCH] Caché construida: {len(cached)} palabras")
 
     # ── Buscar en la caché ─────────────────────────────────────────────
+    term_words = search_term.split()
+    term_len = len(term_words)
     results = []
-    for entry in cached:
-        if search_term in entry["word_norm"]:
-            r = entry["rect"]
+
+    for i in range(len(cached) - term_len + 1):
+        chunk = cached[i:i + term_len]
+        
+        # Solo comparar palabras de la misma página y consecutivas
+        if len(set(e["page"] for e in chunk)) > 1:
+            continue
+            
+        chunk_norms = [e["word_norm"] for e in chunk]
+        
+        # Comparación flexible: el término debe estar contenido en cada palabra
+        # (cubre casos como "jimenez" encontrando "jimenez," con puntuación)
+        match = all(
+            term_words[j] in chunk_norms[j]
+            for j in range(term_len)
+        )
+        
+        if match:
+            r_x0 = min(e["rect"][0] for e in chunk)
+            r_y0 = min(e["rect"][1] for e in chunk)
+            r_x1 = max(e["rect"][2] for e in chunk)
+            r_y1 = max(e["rect"][3] for e in chunk)
             results.append({
-                "page": entry["page"],
+                "page": chunk[0]["page"],
                 "rect": [
-                    max(0, r[0] - SEARCH_PADDING),
-                    max(0, r[1] - SEARCH_PADDING),
-                    r[2] + SEARCH_PADDING,
-                    r[3] + SEARCH_PADDING,
+                    max(0, r_x0 - SEARCH_PADDING),
+                    max(0, r_y0 - SEARCH_PADDING),
+                    r_x1 + SEARCH_PADDING,
+                    r_y1 + SEARCH_PADDING,
                 ]
             })
+
     return results
 # ─────────────────────────── Rutas API ───────────────────────────────
 @app.route("/health")
@@ -380,13 +402,15 @@ def search_text():
     all_matches = []
 
     if ocr_done:
-        # PDF con OCR: usar tesseract por palabra (coordenadas precisas)
+        # PDF con OCR: usar caché tesseract por palabra (coordenadas precisas)
         all_matches = search_in_ocr_pdf(file_id, pdf_path, search_term)
     else:
-        # PDF con texto digital: search_for es suficiente y preciso
+        # PDF con texto digital
         doc = fitz.open(str(pdf_path))
         for page_num in range(len(doc)):
             page = doc[page_num]
+
+            # Método 1: search_for con variantes (rápido, cubre mayúsculas)
             for variant in _search_variants(original_term):
                 for rect in page.search_for(variant):
                     candidate = {
@@ -401,20 +425,36 @@ def search_text():
                     if candidate not in all_matches:
                         all_matches.append(candidate)
 
-            # Palabras normalizadas (para acentos que search_for no cubre)
-            for w in page.get_text("words"):
-                word_norm = normalize_text(w[4])
-                if search_term in word_norm:
+            # Método 2: palabras normalizadas con soporte multi-palabra
+            words = page.get_text("words")
+            term_words = search_term.split()
+            term_len = len(term_words)
+
+            # DEBUG temporal
+            print(f"[DEBUG] Buscando '{search_term}' → term_words={term_words}")
+            for w in words:
+                if any(t in normalize_text(w[4]) for t in term_words):
+                    print(f"[DEBUG] Palabra relevante: {repr(w[4])} norm={repr(normalize_text(w[4]))} bloque={w[5]} linea={w[6]} pos={w[7]}")
+
+            for i in range(len(words) - term_len + 1):
+                chunk = words[i:i + term_len]
+                chunk_norm = [normalize_text(w[4]) for w in chunk]
+
+                match = all(
+                    term_words[j] in chunk_norm[j]
+                    for j in range(term_len)
+                )
+
+                if match:
                     candidate = {
                         "page": page_num,
                         "rect": [
-                            max(0, w[0] - SEARCH_PADDING),
-                            max(0, w[1] - SEARCH_PADDING),
-                            w[2] + SEARCH_PADDING,
-                            w[3] + SEARCH_PADDING,
+                            max(0, min(w[0] for w in chunk) - SEARCH_PADDING),
+                            max(0, min(w[1] for w in chunk) - SEARCH_PADDING),
+                            max(w[2] for w in chunk) + SEARCH_PADDING,
+                            max(w[3] for w in chunk) + SEARCH_PADDING,
                         ]
                     }
-                    # Deduplicar comparando coordenadas con tolerancia
                     already = any(
                         abs(m["rect"][0] - candidate["rect"][0]) < 2 and
                         abs(m["rect"][1] - candidate["rect"][1]) < 2 and
@@ -423,6 +463,7 @@ def search_text():
                     )
                     if not already:
                         all_matches.append(candidate)
+
         doc.close()
 
     # ── Si no hay resultados y el OCR no se ha hecho, lanzarlo ────────

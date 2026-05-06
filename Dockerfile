@@ -5,31 +5,20 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
 
 # Instalar dependencias del sistema
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
     python3-venv \
-    # --- Dependencias para PyMuPDF ---
+    # Dependencias críticas para PyMuPDF (fitz) y visualización
     libmupdf-dev \
     mupdf-tools \
-    # --- Dependencias críticas para OCRmyPDF ---
-    ocrmypdf \
+    # Dependencias para OCR y procesamiento de imágenes
     tesseract-ocr \
     tesseract-ocr-spa \
-    tesseract-ocr-eng \
     libtesseract-dev \
-    ghostscript \
-    unpaper \
-    pngquant \
-    # --- Dependencias para pdf2image (Poppler) ---
+    # Poppler es vital para pdf2image (conversión a imagen para OCR)
     poppler-utils \
-    # --- Dependencias de compilación para paquetes de Python (lxml, pikepdf) ---
-    libxml2-dev \
-    libxslt1-dev \
-    zlib1g-dev \
-    libjpeg-dev \
-    pkg-config \
-    # --- Librerías para OpenCV / Pillow / Otros ---
+    # Librerías necesarias para OpenCV/Pillow si las usas
     libgl1 \
     libglib2.0-0 \
     curl \
