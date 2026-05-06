@@ -895,6 +895,9 @@ exportBtn.addEventListener('click', async () => {
     toast('No hay censuras definidas', 'error'); return;
   }
 
+const exportBtn   = document.getElementById('exportBtn');
+const originalExportBtnHTML = exportBtn.innerHTML;
+  
   exportBtn.disabled = true;
   exportBtn.innerHTML = '<div class="spinner"></div> Procesando…';
 
@@ -937,9 +940,16 @@ exportBtn.addEventListener('click', async () => {
   } catch (err) {
     toast('Error de red al exportar', 'error');
   } finally {
-    exportBtn.disabled = false;
-    exportBtn.innerHTML = `... (tu svg original) ... Descargar PDF censurado`;
-  }
+  exportBtn.disabled = false;
+
+  // Estado de éxito visible
+  exportBtn.innerHTML = '✔ PDF descargado';
+
+  // Restaurar SIEMPRE el contenido original
+  setTimeout(() => {
+    exportBtn.innerHTML = originalExportBtnHTML;
+  }, 2000);
+}
 });
 </script>
 </body>
