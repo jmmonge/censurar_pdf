@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Censor - Log Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #22263a;
+      --border: #2e3250;
+      --accent: #5c6ef5;
+      --accent-hover: #7b8aff;
+      --danger: #f05252;
+      --success: #22c55e;
+      --warn: #f59e0b;
+      --text: #e8eaf0;
+      --muted: #7a7f9a;
+      --radius: 10px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 28px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    header svg {
+      flex-shrink: 0;
+    }
+
+    header h1 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      letter-spacing: -.02em;
+    }
+
+    header p {
+      font-size: .82rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    /* ── Layout ── */
+    .workspace {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      height: calc(100vh - 73px);
+    }
+
+    /* ── Left panel ── */
+    .panel {
+      width: 320px;
+      min-width: 280px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .panel-section {
+      padding: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .panel-section h2 {
+      font-size: .78rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+
+    /* ── Upload zone ── */
+    .drop-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 28px 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+    }
+
+    .drop-zone:hover,
+    .drop-zone.drag-over {
+      border-color: var(--accent);
+      background: rgba(92, 110, 245, .06);
+    }
+
+    .drop-zone svg {
+      margin-bottom: 10px;
+      opacity: .5;
+    }
+
+    .drop-zone p {
+      font-size: .85rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .drop-zone strong {
+      color: var(--accent);
+    }
+
+    /* ── File info ── */
+    .file-info {
+      display: none;
+      align-items: center;
+      gap: 12px;
+      background: var(--surface2);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+    }
+
+    .file-info.show {
+      display: flex;
+    }
+
+    .file-info .meta {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .file-info .meta strong {
+      display: block;
+      font-size: .87rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .file-info .meta span {
+      font-size: .75rem;
+      color: var(--muted);
+    }
+
+    .btn-clear {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 1.1rem;
+      line-height: 1;
+      padding: 4px;
+      border-radius: 4px;
+      transition: color .15s;
+    }
+
+    .btn-clear:hover {
+      color: var(--danger);
+    }
+
+    /* ── Page navigator ── */
+    .page-nav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .page-nav button {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      cursor: pointer;
+      padding: 6px 12px;
+      font-size: .85rem;
+      transition: background .15s;
+    }
+
+    .page-nav button:hover {
+      background: var(--border);
+    }
+
+    .page-nav button:disabled {
+      opacity: .35;
+      cursor: default;
+    }
+
+    .page-counter {
+      font-size: .85rem;
+      color: var(--muted);
+      flex: 1;
+      text-align: center;
+    }
+
+    /* ── Form controls ── */
+    label {
+      font-size: .83rem;
+      color: var(--muted);
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    input[type="text"],
+    textarea {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: .87rem;
+      padding: 8px 11px;
+      outline: none;
+      resize: vertical;
+      transition: border-color .2s;
+    }
+
+    input[type="text"]:focus,
+    textarea:focus {
+      border-color: var(--accent);
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-size: .85rem;
+    }
+
+    input[type="checkbox"] {
+      accent-color: var(--accent);
+      width: 15px;
+      height: 15px;
+      cursor: pointer;
+    }
+
+    /* ── Color picker ── */
+    .color-options {
+      display: flex;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .color-opt {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: border-color .15s, transform .15s;
+    }
+
+    .color-opt:hover {
+      transform: scale(1.15);
+    }
+
+    .color-opt.active {
+      border-color: white;
+    }
+
+    /* ── Redaction list ── */
+    .redaction-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+
+    .redaction-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface2);
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-size: .8rem;
+    }
+
+    .redaction-item .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .redaction-item .info {
+      flex: 1;
+      min-width: 0;
+      color: var(--muted);
+    }
+
+    .redaction-item .info strong {
+      color: var(--text);
+    }
+
+    .redaction-item .del-btn {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: .9rem;
+      padding: 2px;
+      transition: color .15s;
+    }
+
+    .redaction-item .del-btn:hover {
+      color: var(--danger);
+    }
+
+    /* ── Buttons ── */
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: .87rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: background .2s, opacity .2s;
+      width: 100%;
+    }
+
+    .btn:disabled {
+      opacity: .45;
+      cursor: default;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--accent-hover);
+    }
+
+    .btn-secondary {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: var(--border);
+    }
+
+    .btn-danger {
+      background: rgba(240, 82, 82, .15);
+      color: var(--danger);
+      border: 1px solid rgba(240, 82, 82, .3);
+    }
+
+    .btn-danger:hover:not(:disabled) {
+      background: rgba(240, 82, 82, .25);
+    }
+
+    /* ── Mode toggle ── */
+    .mode-toggle {
+      display: flex;
+      gap: 6px;
+      background: var(--surface2);
+      border-radius: 8px;
+      padding: 4px;
+    }
+
+    .mode-btn {
+      flex: 1;
+      padding: 7px;
+      border: none;
+      border-radius: 6px;
+      font-size: .8rem;
+      font-weight: 600;
+      cursor: pointer;
+      background: transparent;
+      color: var(--muted);
+      transition: background .2s, color .2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+
+    .mode-btn.active {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    /* ── Canvas area ── */
+    .canvas-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow: auto;
+      background: #0a0c14;
+      padding: 28px;
+      gap: 20px;
+    }
+
+    .canvas-wrapper {
+      position: relative;
+      box-shadow: 0 8px 40px rgba(0, 0, 0, .6);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    #pdfCanvas {
+      display: block;
+    }
+
+    #drawCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      cursor: crosshair;
+    }
+
+    .canvas-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      opacity: .3;
+      margin-top: 80px;
+    }
+
+    .canvas-placeholder p {
+      font-size: 1rem;
+      color: var(--muted);
+    }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: .87rem;
+      font-weight: 600;
+      z-index: 999;
+      transform: translateY(80px);
+      opacity: 0;
+      transition: transform .3s, opacity .3s;
+      pointer-events: none;
+    }
+
+    #toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    #toast.success {
+      background: var(--success);
+      color: #000;
+    }
+
+    #toast.error {
+      background: var(--danger);
+      color: #fff;
+    }
+
+    #toast.info {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    /* ── Loader ── */
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, .25);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* ── Search matches badge ── */
+    .badge {
+      display: inline-block;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 20px;
+      font-size: .72rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      margin-left: 6px;
+    }
+
+    .gap-8 {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .gap-12 {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .mt-8 {
+      margin-top: 8px;
+    }
+  </style>
+</head>
+
+<body>
+    <header>
+        <a href="/dashboard-logs">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" style="width: 50px; height: 50px;">
+        </a> <!-- <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">-->
+        <rect width="36" height="36" rx="8" fill="#5c6ef5" />
+        <path d="M10 8h11l7 7v13a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2z" fill="white" fill-opacity=".9" />
+        <path d="M21 8v7h7" fill="none" stroke="white" stroke-opacity=".4" stroke-width="1.5" />
+        <rect x="10" y="19" width="10" height="3" rx="1.5" fill="#5c6ef5" />
+        <rect x="10" y="24" width="16" height="3" rx="1.5" fill="#5c6ef5" opacity=".5" />
+        </svg>
+        <div style="line-height: 4px; padding-left: 20px;">
+            <h1 style="color:wheat">PDF Censor</h1>
+            <p style="color: white; font-size: 17px;">Area de Informática</p>
+            <p>Gerencia Mpal. De urbanismo de Sanlúcar de Barrameda</p>
+        </div>
+    </header>
+
+    <div class="container-fluid log-container">
+        <div class="row">
+            <!-- Sidebar: Lista de Archivos -->
+            <div class="col-md-3">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-dark text-white">Archivos de Log</div>
+                    <div class="list-group list-group-flush sidebar-logs">
+                        {% for file in files %}
+                        <!-- Aquí creamos el enlace dinámico -->
+                        <a href="/dashboard-logs/{{ file }}"
+                            class="list-group-item list-group-item-action {% if file == current_file %}active{% endif %}">
+                            <small>{{ file }}</small>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard Principal -->
+            <div class="col-md-9">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Contenido: <strong>{{ current_file }}</strong></h5>
+                        <span class="badge bg-secondary">{{ entries|length }} entradas</span>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Fecha y Hora</th>
+                                        <th>IP</th>
+                                        <th>Acción</th>
+                                        <th>Archivo</th>
+                                        <th>Tamaño</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for entry in entries %}
+                                    <tr>
+                                        <td class="text-muted"><small>{{ entry.date }}</small></td>
+                                        <td><code>{{ entry.ip }}</code></td>
+                                        <td>
+                                            <span
+                                                class="badge {% if 'UPLOAD' in entry.action %}badge-upload{% else %}badge-download{% endif %}">
+                                                {{ entry.action }}
+                                            </span>
+                                        </td>
+                                        <td><strong>{{ entry.file }}</strong></td>
+                                        <td>{{ entry.size }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

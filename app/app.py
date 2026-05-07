@@ -19,10 +19,11 @@ import re
 import logging
 from logging.handlers import RotatingFileHandler
 import time
+from logs_admin import logs_bp
 
 # ─────────────────────────── Configuración ───────────────────────────
 app = Flask(__name__)
-
+app.register_blueprint(logs_bp)
 BASE_DIR = Path(__file__).resolve().parent
 app.config['UPLOAD_FOLDER'] = BASE_DIR / "uploads"
 app.config['OUTPUT_FOLDER'] = BASE_DIR / "outputs"
@@ -599,7 +600,7 @@ def censor_pdf():
 
         original_name = upload_path.name.replace(file_id + "_", "")
 
-        registrar_evento(action="DOWNLOAD_CENSORED_PDF",filename_src=f"censurado_{original_name}")
+        registrar_evento(action="DOWNLOAD",filename_src=f"censurado_{original_name}")
         doc.close()
         
         return send_file(

@@ -532,8 +532,9 @@
 <body>
 
   <header>
-    <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" width="50px" height="50px" margin-right="50px">
-    <!-- <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">-->
+    <a href="/dashboard-logs">
+      <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" style="width: 50px; height: 50px;">
+    </a> <!-- <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">-->
     <rect width="36" height="36" rx="8" fill="#5c6ef5" />
     <path d="M10 8h11l7 7v13a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2z" fill="white" fill-opacity=".9" />
     <path d="M21 8v7h7" fill="none" stroke="white" stroke-opacity=".4" stroke-width="1.5" />
@@ -1203,64 +1204,64 @@
     });
 
     // ─────────────────── Auto-pattern checkboxes ───────────────────
-async function togglePattern(patternKey, checkbox, badge) {
-  if (!state.fileId) { checkbox.checked = false; return; }
+    async function togglePattern(patternKey, checkbox, badge) {
+      if (!state.fileId) { checkbox.checked = false; return; }
 
-  // Si se desmarca, eliminar las redacciones de ese patrón
-  if (!checkbox.checked) {
-    state.redactions = state.redactions.filter(r => r.patternKey !== patternKey);
-    badge.style.display = 'none';
-    redrawOverlays();
-    renderRedactionList();
-    return;
-  }
+      // Si se desmarca, eliminar las redacciones de ese patrón
+      if (!checkbox.checked) {
+        state.redactions = state.redactions.filter(r => r.patternKey !== patternKey);
+        badge.style.display = 'none';
+        redrawOverlays();
+        renderRedactionList();
+        return;
+      }
 
-  checkbox.disabled = true;
-  try {
-    const res = await fetch('/api/search_pattern', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ file_id: state.fileId, pattern: patternKey }),
-    });
-    const data = await res.json();
-    if (!res.ok) { toast(data.error || 'Error al buscar patrón', 'error'); checkbox.checked = false; return; }
+      checkbox.disabled = true;
+      try {
+        const res = await fetch('/api/search_pattern', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ file_id: state.fileId, pattern: patternKey }),
+        });
+        const data = await res.json();
+        if (!res.ok) { toast(data.error || 'Error al buscar patrón', 'error'); checkbox.checked = false; return; }
 
-    if (data.count === 0) {
-      toast('No se encontraron coincidencias', 'info');
-      checkbox.checked = false;
-      return;
+        if (data.count === 0) {
+          toast('No se encontraron coincidencias', 'info');
+          checkbox.checked = false;
+          return;
+        }
+
+        const labels = { dni_nie: 'DNI/NIE', email: 'Email' };
+        data.matches.forEach(m => {
+          state.redactions.push({
+            page: m.page,
+            rect: m.rect,
+            color: [0, 0, 0],
+            label: `${labels[patternKey]}: ${m.found} p.${m.page + 1}`,
+            patternKey,
+          });
+        });
+
+        badge.textContent = data.count;
+        badge.style.display = 'inline-block';
+        redrawOverlays();
+        renderRedactionList();
+        toast(`${data.count} ${labels[patternKey]} encontrados`, 'success');
+      } catch (err) {
+        toast('Error de red', 'error');
+        checkbox.checked = false;
+      } finally {
+        checkbox.disabled = false;
+      }
     }
 
-    const labels = { dni_nie: 'DNI/NIE', email: 'Email' };
-    data.matches.forEach(m => {
-      state.redactions.push({
-        page: m.page,
-        rect: m.rect,
-        color: [0, 0, 0],
-        label: `${labels[patternKey]}: ${m.found} p.${m.page + 1}`,
-        patternKey,
-      });
+    document.getElementById('chkDni').addEventListener('change', function () {
+      togglePattern('dni_nie', this, document.getElementById('dniBadge'));
     });
-
-    badge.textContent = data.count;
-    badge.style.display = 'inline-block';
-    redrawOverlays();
-    renderRedactionList();
-    toast(`${data.count} ${labels[patternKey]} encontrados`, 'success');
-  } catch (err) {
-    toast('Error de red', 'error');
-    checkbox.checked = false;
-  } finally {
-    checkbox.disabled = false;
-  }
-}
-
-document.getElementById('chkDni').addEventListener('change', function () {
-  togglePattern('dni_nie', this, document.getElementById('dniBadge'));
-});
-document.getElementById('chkEmail').addEventListener('change', function () {
-  togglePattern('email', this, document.getElementById('emailBadge'));
-});
+    document.getElementById('chkEmail').addEventListener('change', function () {
+      togglePattern('email', this, document.getElementById('emailBadge'));
+    });
   </script>
 </body>
 
