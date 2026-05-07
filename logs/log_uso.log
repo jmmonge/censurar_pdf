@@ -1,9 +1,0 @@
-[2026-05-07 08:27:08,090] INFO | IP: 192.168.1.37 | Fichero: prueba.pdf | Tamaño: 218.2 KB | Accion: UPLOAD | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:150.0) Gecko/20100101 Firefox/150.0
-[2026-05-07 08:28:28,397] INFO | IP: 192.168.1.37 | Fichero: N/A | Tamaño: 0 KB | Accion: DOWNLOAD_CENSORED_PDF | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:150.0) Gecko/20100101 Firefox/150.0
-[2026-05-07 10:38:16,561] INFO | IP: 192.168.1.37 | Fichero: 1.pdf | Tamaño: 109.6 KB | Accion: UPLOAD | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:150.0) Gecko/20100101 Firefox/150.0
-[2026-05-07 10:45:10,056] INFO | IP: 192.168.1.37 | Fichero: 2.pdf | Tamaño: 109.7 KB | Accion: UPLOAD | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:150.0) Gecko/20100101 Firefox/150.0
-[2026-05-07 10:46:11,604] INFO | IP: 192.168.1.37 | Fichero: prueba.pdf | Tamaño: 218.2 KB | Accion: UPLOAD | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:150.0) Gecko/20100101 Firefox/150.0
-[2026-05-07 10:48:32,536] INFO | IP: 192.168.1.37 | Fichero: prueba.pdf | Tamaño: 218.2 KB | Accion: UPLOAD | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:150.0) Gecko/20100101 Firefox/150.0
-[2026-05-07 10:48:36,618] INFO | IP: 192.168.1.37 | Fichero: censurado_prueba.pdf | Tamaño: 0 KB | Accion: DOWNLOAD_CENSORED_PDF | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:150.0) Gecko/20100101 Firefox/150.0
-[2026-05-07 10:59:47,261] INFO | IP: 192.168.1.37 | Fichero: prueba.pdf | Tamaño: 221.5 KB | Accion: UPLOAD | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:150.0) Gecko/20100101 Firefox/150.0
-[2026-05-07 11:14:06,943] INFO | IP: 192.168.1.37 | Fichero: prueba.pdf | Tamaño: 221.5 KB | Accion: UPLOAD | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:150.0) Gecko/20100101 Firefox/150.0
