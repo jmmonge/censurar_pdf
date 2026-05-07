@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PDF Censor – Redacción de Documentos</title>
   <style>
     :root {
@@ -20,7 +21,11 @@
       --radius: 10px;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     body {
       font-family: 'Segoe UI', system-ui, sans-serif;
@@ -40,9 +45,22 @@
       align-items: center;
       gap: 14px;
     }
-    header svg { flex-shrink: 0; }
-    header h1 { font-size: 1.3rem; font-weight: 700; letter-spacing: -.02em; }
-    header p  { font-size: .82rem; color: var(--muted); margin-top: 2px; }
+
+    header svg {
+      flex-shrink: 0;
+    }
+
+    header h1 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      letter-spacing: -.02em;
+    }
+
+    header p {
+      font-size: .82rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
 
     /* ── Layout ── */
     .workspace {
@@ -62,10 +80,12 @@
       flex-direction: column;
       overflow-y: auto;
     }
+
     .panel-section {
       padding: 20px;
       border-bottom: 1px solid var(--border);
     }
+
     .panel-section h2 {
       font-size: .78rem;
       text-transform: uppercase;
@@ -83,13 +103,27 @@
       cursor: pointer;
       transition: border-color .2s, background .2s;
     }
-    .drop-zone:hover, .drop-zone.drag-over {
+
+    .drop-zone:hover,
+    .drop-zone.drag-over {
       border-color: var(--accent);
-      background: rgba(92,110,245,.06);
+      background: rgba(92, 110, 245, .06);
     }
-    .drop-zone svg { margin-bottom: 10px; opacity: .5; }
-    .drop-zone p { font-size: .85rem; color: var(--muted); line-height: 1.5; }
-    .drop-zone strong { color: var(--accent); }
+
+    .drop-zone svg {
+      margin-bottom: 10px;
+      opacity: .5;
+    }
+
+    .drop-zone p {
+      font-size: .85rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .drop-zone strong {
+      color: var(--accent);
+    }
 
     /* ── File info ── */
     .file-info {
@@ -100,16 +134,44 @@
       border-radius: var(--radius);
       padding: 12px 14px;
     }
-    .file-info.show { display: flex; }
-    .file-info .meta { flex: 1; min-width: 0; }
-    .file-info .meta strong { display: block; font-size: .87rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .file-info .meta span { font-size: .75rem; color: var(--muted); }
-    .btn-clear {
-      background: none; border: none; color: var(--muted);
-      cursor: pointer; font-size: 1.1rem; line-height: 1;
-      padding: 4px; border-radius: 4px; transition: color .15s;
+
+    .file-info.show {
+      display: flex;
     }
-    .btn-clear:hover { color: var(--danger); }
+
+    .file-info .meta {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .file-info .meta strong {
+      display: block;
+      font-size: .87rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .file-info .meta span {
+      font-size: .75rem;
+      color: var(--muted);
+    }
+
+    .btn-clear {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 1.1rem;
+      line-height: 1;
+      padding: 4px;
+      border-radius: 4px;
+      transition: color .15s;
+    }
+
+    .btn-clear:hover {
+      color: var(--danger);
+    }
 
     /* ── Page navigator ── */
     .page-nav {
@@ -117,6 +179,7 @@
       align-items: center;
       gap: 8px;
     }
+
     .page-nav button {
       background: var(--surface2);
       border: 1px solid var(--border);
@@ -127,13 +190,33 @@
       font-size: .85rem;
       transition: background .15s;
     }
-    .page-nav button:hover { background: var(--border); }
-    .page-nav button:disabled { opacity: .35; cursor: default; }
-    .page-counter { font-size: .85rem; color: var(--muted); flex: 1; text-align: center; }
+
+    .page-nav button:hover {
+      background: var(--border);
+    }
+
+    .page-nav button:disabled {
+      opacity: .35;
+      cursor: default;
+    }
+
+    .page-counter {
+      font-size: .85rem;
+      color: var(--muted);
+      flex: 1;
+      text-align: center;
+    }
 
     /* ── Form controls ── */
-    label { font-size: .83rem; color: var(--muted); display: block; margin-bottom: 6px; }
-    input[type="text"], textarea {
+    label {
+      font-size: .83rem;
+      color: var(--muted);
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    input[type="text"],
+    textarea {
       width: 100%;
       background: var(--surface2);
       border: 1px solid var(--border);
@@ -145,7 +228,11 @@
       resize: vertical;
       transition: border-color .2s;
     }
-    input[type="text"]:focus, textarea:focus { border-color: var(--accent); }
+
+    input[type="text"]:focus,
+    textarea:focus {
+      border-color: var(--accent);
+    }
 
     .checkbox-row {
       display: flex;
@@ -153,21 +240,47 @@
       gap: 9px;
       font-size: .85rem;
     }
-    input[type="checkbox"] { accent-color: var(--accent); width: 15px; height: 15px; cursor: pointer; }
+
+    input[type="checkbox"] {
+      accent-color: var(--accent);
+      width: 15px;
+      height: 15px;
+      cursor: pointer;
+    }
 
     /* ── Color picker ── */
-    .color-options { display: flex; gap: 8px; margin-top: 4px; }
+    .color-options {
+      display: flex;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
     .color-opt {
-      width: 28px; height: 28px; border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
       border: 2px solid transparent;
       cursor: pointer;
       transition: border-color .15s, transform .15s;
     }
-    .color-opt:hover { transform: scale(1.15); }
-    .color-opt.active { border-color: white; }
+
+    .color-opt:hover {
+      transform: scale(1.15);
+    }
+
+    .color-opt.active {
+      border-color: white;
+    }
 
     /* ── Redaction list ── */
-    .redaction-list { display: flex; flex-direction: column; gap: 6px; max-height: 220px; overflow-y: auto; }
+    .redaction-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+
     .redaction-item {
       display: flex;
       align-items: center;
@@ -177,17 +290,37 @@
       padding: 8px 10px;
       font-size: .8rem;
     }
+
     .redaction-item .dot {
-      width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
     }
-    .redaction-item .info { flex: 1; min-width: 0; color: var(--muted); }
-    .redaction-item .info strong { color: var(--text); }
+
+    .redaction-item .info {
+      flex: 1;
+      min-width: 0;
+      color: var(--muted);
+    }
+
+    .redaction-item .info strong {
+      color: var(--text);
+    }
+
     .redaction-item .del-btn {
-      background: none; border: none; color: var(--muted);
-      cursor: pointer; font-size: .9rem; padding: 2px;
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: .9rem;
+      padding: 2px;
       transition: color .15s;
     }
-    .redaction-item .del-btn:hover { color: var(--danger); }
+
+    .redaction-item .del-btn:hover {
+      color: var(--danger);
+    }
 
     /* ── Buttons ── */
     .btn {
@@ -204,13 +337,40 @@
       transition: background .2s, opacity .2s;
       width: 100%;
     }
-    .btn:disabled { opacity: .45; cursor: default; }
-    .btn-primary { background: var(--accent); color: #fff; }
-    .btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
-    .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
-    .btn-secondary:hover:not(:disabled) { background: var(--border); }
-    .btn-danger { background: rgba(240,82,82,.15); color: var(--danger); border: 1px solid rgba(240,82,82,.3); }
-    .btn-danger:hover:not(:disabled) { background: rgba(240,82,82,.25); }
+
+    .btn:disabled {
+      opacity: .45;
+      cursor: default;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--accent-hover);
+    }
+
+    .btn-secondary {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: var(--border);
+    }
+
+    .btn-danger {
+      background: rgba(240, 82, 82, .15);
+      color: var(--danger);
+      border: 1px solid rgba(240, 82, 82, .3);
+    }
+
+    .btn-danger:hover:not(:disabled) {
+      background: rgba(240, 82, 82, .25);
+    }
 
     /* ── Mode toggle ── */
     .mode-toggle {
@@ -220,6 +380,7 @@
       border-radius: 8px;
       padding: 4px;
     }
+
     .mode-btn {
       flex: 1;
       padding: 7px;
@@ -236,6 +397,7 @@
       justify-content: center;
       gap: 5px;
     }
+
     .mode-btn.active {
       background: var(--accent);
       color: #fff;
@@ -252,20 +414,25 @@
       padding: 28px;
       gap: 20px;
     }
+
     .canvas-wrapper {
       position: relative;
-      box-shadow: 0 8px 40px rgba(0,0,0,.6);
+      box-shadow: 0 8px 40px rgba(0, 0, 0, .6);
       border-radius: 4px;
       overflow: hidden;
     }
+
     #pdfCanvas {
       display: block;
     }
+
     #drawCanvas {
       position: absolute;
-      top: 0; left: 0;
+      top: 0;
+      left: 0;
       cursor: crosshair;
     }
+
     .canvas-placeholder {
       display: flex;
       flex-direction: column;
@@ -274,7 +441,11 @@
       opacity: .3;
       margin-top: 80px;
     }
-    .canvas-placeholder p { font-size: 1rem; color: var(--muted); }
+
+    .canvas-placeholder p {
+      font-size: 1rem;
+      color: var(--muted);
+    }
 
     /* ── Toast ── */
     #toast {
@@ -291,20 +462,42 @@
       transition: transform .3s, opacity .3s;
       pointer-events: none;
     }
-    #toast.show { transform: translateY(0); opacity: 1; }
-    #toast.success { background: var(--success); color: #000; }
-    #toast.error   { background: var(--danger);  color: #fff; }
-    #toast.info    { background: var(--accent);   color: #fff; }
+
+    #toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    #toast.success {
+      background: var(--success);
+      color: #000;
+    }
+
+    #toast.error {
+      background: var(--danger);
+      color: #fff;
+    }
+
+    #toast.info {
+      background: var(--accent);
+      color: #fff;
+    }
 
     /* ── Loader ── */
     .spinner {
-      width: 16px; height: 16px;
-      border: 2px solid rgba(255,255,255,.25);
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, .25);
       border-top-color: #fff;
       border-radius: 50%;
       animation: spin .7s linear infinite;
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
 
     /* ── Search matches badge ── */
     .badge {
@@ -318,271 +511,323 @@
       margin-left: 6px;
     }
 
-    .gap-8 { display: flex; flex-direction: column; gap: 8px; }
-    .gap-12 { display: flex; flex-direction: column; gap: 12px; }
-    .mt-8 { margin-top: 8px; }
+    .gap-8 {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .gap-12 {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .mt-8 {
+      margin-top: 8px;
+    }
   </style>
 </head>
+
 <body>
 
-<header>
-  <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" width="50px" height="50px" margin-right="50px">
- <!-- <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">-->
-    <rect width="36" height="36" rx="8" fill="#5c6ef5"/>
-    <path d="M10 8h11l7 7v13a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2z" fill="white" fill-opacity=".9"/>
-    <path d="M21 8v7h7" fill="none" stroke="white" stroke-opacity=".4" stroke-width="1.5"/>
-    <rect x="10" y="19" width="10" height="3" rx="1.5" fill="#5c6ef5"/>
-    <rect x="10" y="24" width="16" height="3" rx="1.5" fill="#5c6ef5" opacity=".5"/>
-  </svg>
-  <div style="line-height: 17px; padding-left: 20px;">
-    <h1 style="color:wheat">PDF Censor</h1>
-    <p style="color: white; font-size: 17px;">Area de Informática</p>
-    <p>Gerencia Mpal. De urbanismo de Sanlúcar de Barrameda</p>
-  </div>
-</header>
+  <header>
+    <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" width="50px" height="50px" margin-right="50px">
+    <!-- <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">-->
+    <rect width="36" height="36" rx="8" fill="#5c6ef5" />
+    <path d="M10 8h11l7 7v13a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2z" fill="white" fill-opacity=".9" />
+    <path d="M21 8v7h7" fill="none" stroke="white" stroke-opacity=".4" stroke-width="1.5" />
+    <rect x="10" y="19" width="10" height="3" rx="1.5" fill="#5c6ef5" />
+    <rect x="10" y="24" width="16" height="3" rx="1.5" fill="#5c6ef5" opacity=".5" />
+    </svg>
+    <div style="line-height: 17px; padding-left: 20px;">
+      <h1 style="color:wheat">PDF Censor</h1>
+      <p style="color: white; font-size: 17px;">Area de Informática</p>
+      <p>Gerencia Mpal. De urbanismo de Sanlúcar de Barrameda</p>
+    </div>
+  </header>
 
-<div class="workspace">
-  <!-- ── Left panel ── -->
-  <aside class="panel">
+  <div class="workspace">
+    <!-- ── Left panel ── -->
+    <aside class="panel">
 
-    <!-- Upload -->
-    <div class="panel-section">
-      <h2>1. Cargar documento</h2>
-      <div class="drop-zone" id="dropZone">
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <polyline points="17 8 12 3 7 8"/>
-          <line x1="12" y1="3" x2="12" y2="15"/>
-        </svg>
-        <p>Arrastra tu PDF aquí o<br/><strong>haz clic para seleccionar</strong></p>
-        <p style="margin-top:6px;font-size:.75rem;">Máximo 250 MB</p>
-        <input type="file" id="fileInput" accept=".pdf" style="display:none"/>
-      </div>
-      <div class="file-info mt-8" id="fileInfo">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#5c6ef5" stroke-width="2">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-          <polyline points="14 2 14 8 20 8"/>
-        </svg>
-        <div class="meta">
-          <strong id="fileName">–</strong>
-          <span id="fileSize">–</span>
+      <!-- Upload -->
+      <div class="panel-section">
+        <h2>1. Cargar documento</h2>
+        <div class="drop-zone" id="dropZone">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="17 8 12 3 7 8" />
+            <line x1="12" y1="3" x2="12" y2="15" />
+          </svg>
+          <p>Arrastra tu PDF aquí o<br /><strong>haz clic para seleccionar</strong></p>
+          <p style="margin-top:6px;font-size:.75rem;">Máximo 250 MB</p>
+          <input type="file" id="fileInput" accept=".pdf" style="display:none" />
         </div>
-        <button class="btn-clear" id="clearBtn" title="Eliminar archivo">✕</button>
-      </div>
-    </div>
-
-    <!-- Page nav -->
-    <div class="panel-section" id="pageNavSection" style="display:none">
-      <h2>2. Navegar páginas</h2>
-      <div class="page-nav">
-        <button id="prevPage">◀</button>
-        <span class="page-counter" id="pageCounter">Página 1 de 1</span>
-        <button id="nextPage">▶</button>
-      </div>
-    </div>
-
-    <!-- Mode -->
-    <div class="panel-section" id="modeSection" style="display:none">
-      <h2>3. Modo de censura</h2>
-      <div class="mode-toggle">
-        <button class="mode-btn active" id="modeRect" title="Dibujar rectángulo">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
-          Dibujar
-        </button>
-        <button class="mode-btn" id="modeSearch" title="Censurar por texto">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          Buscar
-        </button>
-      </div>
-
-      <!-- Rectangle mode options -->
-    
-      <div id="rectOptions" class="gap-8 mt-8">
-       
-        <div>
-          <label>Color de censura</label>
-          <div class="color-options">
-            <div class="color-opt active" data-color="0,0,0"       style="background:#000"    title="Negro"></div>
-            <div class="color-opt"        data-color="1,1,1"       style="background:#fff;border:1px solid #444" title="Blanco"></div>
-            <div class="color-opt"        data-color="0.13,0.13,0.5" style="background:#222280" title="Azul oscuro"></div>
-            <div class="color-opt"        data-color="0.55,0,0"    style="background:#8c0000" title="Rojo oscuro"></div>
+        <div class="file-info mt-8" id="fileInfo">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#5c6ef5" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+          </svg>
+          <div class="meta">
+            <strong id="fileName">–</strong>
+            <span id="fileSize">–</span>
           </div>
+          <button class="btn-clear" id="clearBtn" title="Eliminar archivo">✕</button>
         </div>
-      
-        <p style="font-size:.77rem;color:var(--muted)">Dibuja un rectángulo sobre el área que deseas censurar.</p>
       </div>
 
-      <!-- Search mode options -->
-      <div id="searchOptions" class="gap-8 mt-8" style="display:none">
-        <div>
-          <label for="searchInput">Texto a censurar</label>
-          <input type="text" id="searchInput" placeholder="Ej: Nombre Apellido, DNI, email…"/>
+      <!-- Page nav -->
+      <div class="panel-section" id="pageNavSection" style="display:none">
+        <h2>2. Navegar páginas</h2>
+        <div class="page-nav">
+          <button id="prevPage">◀</button>
+          <span class="page-counter" id="pageCounter">Página 1 de 1</span>
+          <button id="nextPage">▶</button>
         </div>
-        <button class="btn btn-secondary" id="searchBtn">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          Buscar en todo el PDF
-        </button>
-        <div id="searchResults" style="font-size:.8rem;color:var(--muted);display:none"></div>
       </div>
-    </div>
 
-    <!-- Redaction list -->
-    <div class="panel-section" id="redListSection" style="display:none">
-      <h2>4. Censuras pendientes <span id="redCount" class="badge">0</span></h2>
-      <div class="redaction-list" id="redactionList"></div>
-      <button class="btn btn-danger mt-8" id="clearAllBtn" style="display:none">
-        Borrar todas
-      </button>
-    </div>
+      <!-- Mode -->
+      <div class="panel-section" id="modeSection" style="display:none">
+        <h2>3. Modo de censura</h2>
+        <div class="mode-toggle">
+          <button class="mode-btn active" id="modeRect" title="Dibujar rectángulo">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+            </svg>
+            Dibujar
+          </button>
+          <button class="mode-btn" id="modeSearch" title="Censurar por texto">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            Buscar
+          </button>
+        </div>
+        <!-- Auto-pattern options -->
+        <div id="autoPatterns" class="gap-8 mt-8" style="display:none">
+          <label style="margin-bottom:2px">Censura automática</label>
 
-    <!-- Options & export -->
-    <div class="panel-section" id="exportSection" style="display:none">
-      <h2>5. Exportar</h2>
-      <div class="gap-12">
-        <button class="btn btn-primary" id="exportBtn">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Descargar PDF censurado
+          <div class="checkbox-row">
+            <input type="checkbox" id="chkDni" />
+            <label for="chkDni" style="margin:0;color:var(--text)">
+              DNI / NIE
+              <span id="dniBadge" class="badge" style="display:none">0</span>
+            </label>
+          </div>
+
+          <div class="checkbox-row">
+            <input type="checkbox" id="chkEmail" />
+            <label for="chkEmail" style="margin:0;color:var(--text)">
+              Correo electrónico
+              <span id="emailBadge" class="badge" style="display:none">0</span>
+            </label>
+          </div>
+
+          <p style="font-size:.77rem;color:var(--muted)">
+            Marca para buscar y censurar automáticamente en todo el documento.
+          </p>
+          <hr style="border-color:var(--border);border-width:1px 0 0;margin:4px 0" />
+        </div>
+        <!-- Rectangle mode options -->
+
+        <div id="rectOptions" class="gap-8 mt-8">
+
+          <div>
+            <label>Color de censura</label>
+            <div class="color-options">
+              <div class="color-opt active" data-color="0,0,0" style="background:#000" title="Negro"></div>
+              <div class="color-opt" data-color="1,1,1" style="background:#fff;border:1px solid #444" title="Blanco">
+              </div>
+              <div class="color-opt" data-color="0.13,0.13,0.5" style="background:#222280" title="Azul oscuro"></div>
+              <div class="color-opt" data-color="0.55,0,0" style="background:#8c0000" title="Rojo oscuro"></div>
+            </div>
+          </div>
+
+          <p style="font-size:.77rem;color:var(--muted)">Dibuja un rectángulo sobre el área que deseas censurar.</p>
+        </div>
+
+        <!-- Search mode options -->
+        <div id="searchOptions" class="gap-8 mt-8" style="display:none">
+          <div>
+            <label for="searchInput">Texto a censurar</label>
+            <input type="text" id="searchInput" style="background-color:white; color:black;"
+              placeholder="Ej: Nombre Apellido, DNI, email…" />
+          </div>
+          <button class="btn btn-secondary" id="searchBtn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            Buscar en todo el PDF
+          </button>
+          <div id="searchResults" style="font-size:.8rem;color:var(--muted);display:none"></div>
+        </div>
+      </div>
+
+      <!-- Redaction list -->
+      <div class="panel-section" id="redListSection" style="display:none">
+        <h2>4. Cadenas encontradas <span id="redCount" class="badge">0</span></h2>
+        <div class="redaction-list" id="redactionList"></div>
+        <button class="btn btn-danger mt-8" id="clearAllBtn" style="display:none">
+          Borrar todas
         </button>
       </div>
-    </div>
 
-  </aside>
+      <!-- Options & export -->
+      <div class="panel-section" id="exportSection" style="display:none">
+        <h2>5. Exportar</h2>
+        <div class="gap-12">
+          <button class="btn btn-primary" id="exportBtn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            Descargar PDF censurado
+          </button>
+        </div>
+      </div>
 
-  <!-- ── Canvas area ── -->
-  <main class="canvas-area" id="canvasArea">
-    <div class="canvas-placeholder" id="placeholder">
-      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-        <polyline points="14 2 14 8 20 8"/>
-      </svg>
-      <p>Sube un PDF para comenzar</p>
-    </div>
-    <div class="canvas-wrapper" id="canvasWrapper" style="display:none">
-      <canvas id="pdfCanvas"></canvas>
-      <canvas id="drawCanvas"></canvas>
-    </div>
-  </main>
-</div>
+    </aside>
 
-<div id="toast"></div>
+    <!-- ── Canvas area ── -->
+    <main class="canvas-area" id="canvasArea">
+      <div class="canvas-placeholder" id="placeholder">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+        </svg>
+        <p>Sube un PDF para comenzar</p>
+      </div>
+      <div class="canvas-wrapper" id="canvasWrapper" style="display:none">
+        <canvas id="pdfCanvas"></canvas>
+        <canvas id="drawCanvas"></canvas>
+      </div>
+    </main>
+  </div>
 
-<script>
-// ─────────────────── State ───────────────────
-const state = {
-  fileId: null,
-  originalName: 'documento',
-  pageCount: 0,
-  currentPage: 0,
-  mode: 'rect',           // 'rect' | 'search'
-  redactions: [],         // [{page, rect:[x0,y0,x1,y1], color:[r,g,b], label}]
-  searchTerms: [],        // strings to auto-redact
-  redactColor: [0, 0, 0],
-  drawing: false,
-  startX: 0, startY: 0,
-  pageScale: 1,
-  pageOrigW: 0, pageOrigH: 0,
-};
+  <div id="toast"></div>
 
-// ─────────────────── DOM refs ───────────────────
-const dropZone    = document.getElementById('dropZone');
-const fileInput   = document.getElementById('fileInput');
-const fileInfo    = document.getElementById('fileInfo');
-const fileName    = document.getElementById('fileName');
-const fileSize    = document.getElementById('fileSize');
-const clearBtn    = document.getElementById('clearBtn');
-const pageNavSection  = document.getElementById('pageNavSection');
-const modeSection     = document.getElementById('modeSection');
-const redListSection  = document.getElementById('redListSection');
-const exportSection   = document.getElementById('exportSection');
-const prevPage    = document.getElementById('prevPage');
-const nextPage    = document.getElementById('nextPage');
-const pageCounter = document.getElementById('pageCounter');
-const modeRect    = document.getElementById('modeRect');
-const modeSearch  = document.getElementById('modeSearch');
-const rectOptions = document.getElementById('rectOptions');
-const searchOptions = document.getElementById('searchOptions');
-const searchInput = document.getElementById('searchInput');
-const searchBtn   = document.getElementById('searchBtn');
-const searchResults = document.getElementById('searchResults');
-const redactionList = document.getElementById('redactionList');
-const redCount    = document.getElementById('redCount');
-const clearAllBtn = document.getElementById('clearAllBtn');
-const exportBtn   = document.getElementById('exportBtn');
-const clearMeta   = document.getElementById('clearMeta');
-const pdfCanvas   = document.getElementById('pdfCanvas');
-const drawCanvas  = document.getElementById('drawCanvas');
-const canvasWrapper = document.getElementById('canvasWrapper');
-const placeholder = document.getElementById('placeholder');
+  <script>
+    // ─────────────────── State ───────────────────
+    const state = {
+      fileId: null,
+      originalName: 'documento',
+      pageCount: 0,
+      currentPage: 0,
+      mode: 'rect',           // 'rect' | 'search'
+      redactions: [],         // [{page, rect:[x0,y0,x1,y1], color:[r,g,b], label}]
+      searchTerms: [],        // strings to auto-redact
+      redactColor: [0, 0, 0],
+      drawing: false,
+      startX: 0, startY: 0,
+      pageScale: 1,
+      pageOrigW: 0, pageOrigH: 0,
+    };
 
-const ctx  = pdfCanvas.getContext('2d');
-const dCtx = drawCanvas.getContext('2d');
+    // ─────────────────── DOM refs ───────────────────
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const fileInfo = document.getElementById('fileInfo');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const clearBtn = document.getElementById('clearBtn');
+    const pageNavSection = document.getElementById('pageNavSection');
+    const modeSection = document.getElementById('modeSection');
+    const redListSection = document.getElementById('redListSection');
+    const exportSection = document.getElementById('exportSection');
+    const prevPage = document.getElementById('prevPage');
+    const nextPage = document.getElementById('nextPage');
+    const pageCounter = document.getElementById('pageCounter');
+    const modeRect = document.getElementById('modeRect');
+    const modeSearch = document.getElementById('modeSearch');
+    const rectOptions = document.getElementById('rectOptions');
+    const searchOptions = document.getElementById('searchOptions');
+    const searchInput = document.getElementById('searchInput');
+    const searchBtn = document.getElementById('searchBtn');
+    const searchResults = document.getElementById('searchResults');
+    const redactionList = document.getElementById('redactionList');
+    const redCount = document.getElementById('redCount');
+    const clearAllBtn = document.getElementById('clearAllBtn');
+    const exportBtn = document.getElementById('exportBtn');
+    const clearMeta = document.getElementById('clearMeta');
+    const pdfCanvas = document.getElementById('pdfCanvas');
+    const drawCanvas = document.getElementById('drawCanvas');
+    const canvasWrapper = document.getElementById('canvasWrapper');
+    const placeholder = document.getElementById('placeholder');
 
-// ─────────────────── Toast ───────────────────
-function toast(msg, type = 'info', ms = 3000) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.className = `show ${type}`;
-  clearTimeout(el._t);
-  el._t = setTimeout(() => el.className = '', ms);
-}
+    const ctx = pdfCanvas.getContext('2d');
+    const dCtx = drawCanvas.getContext('2d');
 
-// ─────────────────── Upload ───────────────────
-dropZone.addEventListener('click', () => fileInput.click());
-dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
-dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
-dropZone.addEventListener('drop', e => {
-  e.preventDefault();
-  dropZone.classList.remove('drag-over');
-  const f = e.dataTransfer.files[0];
-  if (f) uploadFile(f);
-});
-fileInput.addEventListener('change', () => {
-  if (fileInput.files[0]) uploadFile(fileInput.files[0]);
-});
-clearBtn.addEventListener('click', resetAll);
+    // ─────────────────── Toast ───────────────────
+    function toast(msg, type = 'info', ms = 3000) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.className = `show ${type}`;
+      clearTimeout(el._t);
+      el._t = setTimeout(() => el.className = '', ms);
+    }
 
-async function uploadFile(file) {
-  if (!file.name.endsWith('.pdf')) { toast('Solo se aceptan archivos PDF.', 'error'); return; }
+    // ─────────────────── Upload ───────────────────
+    dropZone.addEventListener('click', () => fileInput.click());
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.classList.remove('drag-over');
+      const f = e.dataTransfer.files[0];
+      if (f) uploadFile(f);
+    });
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files[0]) uploadFile(fileInput.files[0]);
+    });
+    clearBtn.addEventListener('click', resetAll);
 
-  // Guarda el nombre original sin la extensión para usarlo luego
-  state.originalName = file.name.replace(/\.[^/.]+$/, "");
+    async function uploadFile(file) {
+      if (!file.name.endsWith('.pdf')) { toast('Solo se aceptan archivos PDF.', 'error'); return; }
+      resetAll();
+      // Guarda el nombre original sin la extensión para usarlo luego
+      state.originalName = file.name.replace(/\.[^/.]+$/, "");
 
-  const fd = new FormData();
-  fd.append('file', file);
+      const fd = new FormData();
+      fd.append('file', file);
 
-  dropZone.innerHTML = '<div class="spinner"></div><p style="margin-top:10px;color:var(--muted)">Subiendo…</p>';
+      dropZone.innerHTML = '<div class="spinner"></div><p style="margin-top:10px;color:var(--muted)">Subiendo…</p>';
 
-  try {
-    const res = await fetch('/api/upload', { method: 'POST', body: fd });
-    const data = await res.json();
-    if (!res.ok) { toast(data.error || 'Error al subir el archivo', 'error'); resetDropZone(); return; }
+      try {
+        const res = await fetch('/api/upload', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (!res.ok) { toast(data.error || 'Error al subir el archivo', 'error'); resetDropZone(); return; }
 
-    state.fileId    = data.file_id;
-    state.pageCount = data.pages;
-    state.currentPage = 0;
-    state.redactions = [];
-    state.searchTerms = [];
+        state.fileId = data.file_id;
+        state.pageCount = data.pages;
+        state.currentPage = 0;
+        state.redactions = [];
+        state.searchTerms = [];
 
-    fileName.textContent = data.filename;
-    fileSize.textContent = `${data.pages} páginas · ${data.size_kb} KB`;
-    fileInfo.classList.add('show');
-    dropZone.style.display = 'none';
+        fileName.textContent = data.filename;
+        fileSize.textContent = `${data.pages} páginas · ${data.size_kb} KB`;
+        fileInfo.classList.add('show');
+        dropZone.style.display = 'none';
 
-    [pageNavSection, modeSection, redListSection, exportSection].forEach(s => s.style.display = '');
-    placeholder.style.display = 'none';
-    canvasWrapper.style.display = 'block';
+        [pageNavSection, modeSection, redListSection, exportSection].forEach(s => s.style.display = '');
+        document.getElementById('autoPatterns').style.display = '';
+        placeholder.style.display = 'none';
+        canvasWrapper.style.display = 'block';
 
-    updatePageNav();
-    renderPage();
-    toast('PDF cargado correctamente', 'success');
-  } catch (e) {
-    toast('Error de red al subir el archivo', 'error');
-    resetDropZone();
-  }
-}
+        updatePageNav();
+        renderPage();
+        toast('PDF cargado correctamente', 'success');
+      } catch (e) {
+        toast('Error de red al subir el archivo', 'error');
+        resetDropZone();
+      }
+    }
 
-function resetDropZone() {
-  dropZone.innerHTML = `
+    function resetDropZone() {
+      dropZone.innerHTML = `
     <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
       <polyline points="17 8 12 3 7 8"/>
@@ -591,366 +836,432 @@ function resetDropZone() {
     <p>Arrastra tu PDF aquí o<br/><strong>haz clic para seleccionar</strong></p>
     <p style="margin-top:6px;font-size:.75rem;">Máximo 250 MB</p>
     <input type="file" id="fileInput" accept=".pdf" style="display:none"/>`;
-  document.getElementById('fileInput').addEventListener('change', () => {
-    const f = document.getElementById('fileInput').files[0];
-    if (f) uploadFile(f);
-  });
-}
+      document.getElementById('fileInput').addEventListener('change', () => {
+        const f = document.getElementById('fileInput').files[0];
+        if (f) uploadFile(f);
+      });
+    }
 
-function resetAll() {
-  state.fileId = null; state.pageCount = 0; state.currentPage = 0;
-  state.redactions = []; state.searchTerms = [];
-  fileInfo.classList.remove('show');
-  dropZone.style.display = '';
-  resetDropZone();
-  [pageNavSection, modeSection, redListSection, exportSection].forEach(s => s.style.display = 'none');
-  placeholder.style.display = '';
-  canvasWrapper.style.display = 'none';
-  ctx.clearRect(0, 0, pdfCanvas.width, pdfCanvas.height);
-  dCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
-  renderRedactionList();
-}
+    function resetAll() {
+      state.fileId = null; state.pageCount = 0; state.currentPage = 0;
+      state.redactions = []; state.searchTerms = [];
+      fileInfo.classList.remove('show');
+      dropZone.style.display = '';
+      resetDropZone();
+      [pageNavSection, modeSection, redListSection, exportSection].forEach(s => s.style.display = 'none');
+      placeholder.style.display = '';
+      canvasWrapper.style.display = 'none';
+      ctx.clearRect(0, 0, pdfCanvas.width, pdfCanvas.height);
+      dCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+      renderRedactionList();
+      document.getElementById('autoPatterns').style.display = 'none';
+      document.getElementById('chkDni').checked = false;
+      document.getElementById('chkEmail').checked = false;
+      document.getElementById('dniBadge').style.display = 'none';
+      document.getElementById('emailBadge').style.display = 'none';
+    }
 
-// ─────────────────── Page navigation ───────────────────
-prevPage.addEventListener('click', () => { if (state.currentPage > 0) { state.currentPage--; updatePageNav(); renderPage(); }});
-nextPage.addEventListener('click', () => { if (state.currentPage < state.pageCount - 1) { state.currentPage++; updatePageNav(); renderPage(); }});
+    // ─────────────────── Page navigation ───────────────────
+    prevPage.addEventListener('click', () => { if (state.currentPage > 0) { state.currentPage--; updatePageNav(); renderPage(); } });
+    nextPage.addEventListener('click', () => { if (state.currentPage < state.pageCount - 1) { state.currentPage++; updatePageNav(); renderPage(); } });
 
-function updatePageNav() {
-  pageCounter.textContent = `Página ${state.currentPage + 1} de ${state.pageCount}`;
-  prevPage.disabled = state.currentPage === 0;
-  nextPage.disabled = state.currentPage === state.pageCount - 1;
-}
+    function updatePageNav() {
+      pageCounter.textContent = `Página ${state.currentPage + 1} de ${state.pageCount}`;
+      prevPage.disabled = state.currentPage === 0;
+      nextPage.disabled = state.currentPage === state.pageCount - 1;
+    }
 
-// ─────────────────── Render page ───────────────────
-async function renderPage() {
-  if (!state.fileId) return;
-  ctx.clearRect(0, 0, pdfCanvas.width, pdfCanvas.height);
-  dCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+    // ─────────────────── Render page ───────────────────
+    async function renderPage() {
+      if (!state.fileId) return;
+      ctx.clearRect(0, 0, pdfCanvas.width, pdfCanvas.height);
+      dCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
 
-  const img = new Image();
-  img.onload = () => {
-    pdfCanvas.width  = img.width;
-    pdfCanvas.height = img.height;
-    drawCanvas.width  = img.width;
-    drawCanvas.height = img.height;
+      const img = new Image();
+      img.onload = () => {
+        pdfCanvas.width = img.width;
+        pdfCanvas.height = img.height;
+        drawCanvas.width = img.width;
+        drawCanvas.height = img.height;
 
-    // store scale (the server renders at 1.5x)
-    state.pageScale = 1.5;
-    state.pageOrigW = img.width  / state.pageScale;
-    state.pageOrigH = img.height / state.pageScale;
+        // store scale (the server renders at 1.5x)
+        state.pageScale = 1.5;
+        state.pageOrigW = img.width / state.pageScale;
+        state.pageOrigH = img.height / state.pageScale;
 
-    ctx.drawImage(img, 0, 0);
-    redrawOverlays();
-  };
-  img.onerror = () => toast('Error al cargar la página', 'error');
-  img.src = `/api/preview/${state.fileId}/${state.currentPage}?t=${Date.now()}`;
-}
+        ctx.drawImage(img, 0, 0);
+        redrawOverlays();
+      };
+      img.onerror = () => toast('Error al cargar la página', 'error');
+      img.src = `/api/preview/${state.fileId}/${state.currentPage}?t=${Date.now()}`;
+    }
 
-function redrawOverlays() {
-  dCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
-  const sc = state.pageScale;
+    function redrawOverlays() {
+      dCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+      const sc = state.pageScale;
 
-  state.redactions
-    .filter(r => r.page === state.currentPage)
-    .forEach(r => {
-      const [x0, y0, x1, y1] = r.rect;
-      const [cr, cg, cb] = r.color;
-      dCtx.fillStyle = `rgb(${Math.round(cr*255)},${Math.round(cg*255)},${Math.round(cb*255)})`;
-      dCtx.fillRect(x0 * sc, y0 * sc, (x1 - x0) * sc, (y1 - y0) * sc);
+      state.redactions
+        .filter(r => r.page === state.currentPage)
+        .forEach(r => {
+          const [x0, y0, x1, y1] = r.rect;
+          const [cr, cg, cb] = r.color;
+          dCtx.fillStyle = `rgb(${Math.round(cr * 255)},${Math.round(cg * 255)},${Math.round(cb * 255)})`;
+          dCtx.fillRect(x0 * sc, y0 * sc, (x1 - x0) * sc, (y1 - y0) * sc);
+        });
+
+      // search-based highlights (preview only)
+      // These will be applied server-side; here we just show them visually
+    }
+
+    // ─────────────────── Mode toggle ───────────────────
+    modeRect.addEventListener('click', () => setMode('rect'));
+    modeSearch.addEventListener('click', () => setMode('search'));
+
+    function setMode(m) {
+      state.mode = m;
+      modeRect.classList.toggle('active', m === 'rect');
+      modeSearch.classList.toggle('active', m === 'search');
+      rectOptions.style.display = m === 'rect' ? '' : 'none';
+      searchOptions.style.display = m === 'search' ? '' : 'none';
+    }
+
+    // ─────────────────── Color options ───────────────────
+    document.querySelectorAll('.color-opt').forEach(opt => {
+      opt.addEventListener('click', () => {
+        document.querySelectorAll('.color-opt').forEach(o => o.classList.remove('active'));
+        opt.classList.add('active');
+        state.redactColor = opt.dataset.color.split(',').map(Number);
+      });
     });
 
-  // search-based highlights (preview only)
-  // These will be applied server-side; here we just show them visually
-}
+    // ─────────────────── Draw on canvas ───────────────────
+    // Actualiza el evento mousedown existente
+    drawCanvas.addEventListener('mousedown', e => {
+      if (!state.fileId) return;
 
-// ─────────────────── Mode toggle ───────────────────
-modeRect.addEventListener('click', () => setMode('rect'));
-modeSearch.addEventListener('click', () => setMode('search'));
+      const r = drawCanvas.getBoundingClientRect();
+      const mouseX = (e.clientX - r.left) / state.pageScale;
+      const mouseY = (e.clientY - r.top) / state.pageScale;
 
-function setMode(m) {
-  state.mode = m;
-  modeRect.classList.toggle('active', m === 'rect');
-  modeSearch.classList.toggle('active', m === 'search');
-  rectOptions.style.display   = m === 'rect'   ? '' : 'none';
-  searchOptions.style.display = m === 'search' ? '' : 'none';
-}
+      // --- NUEVA LÓGICA DE SELECCIÓN/ELIMINACIÓN ---
+      // Buscamos si el clic ha caído dentro de algún rectángulo existente en la página actual
+      const clickedIdx = state.redactions.findIndex(red => {
+        if (red.page !== state.currentPage) return false;
+        const [x0, y0, x1, y1] = red.rect;
+        return mouseX >= x0 && mouseX <= x1 && mouseY >= y0 && mouseY <= y1;
+      });
 
-// ─────────────────── Color options ───────────────────
-document.querySelectorAll('.color-opt').forEach(opt => {
-  opt.addEventListener('click', () => {
-    document.querySelectorAll('.color-opt').forEach(o => o.classList.remove('active'));
-    opt.classList.add('active');
-    state.redactColor = opt.dataset.color.split(',').map(Number);
-  });
-});
+      if (clickedIdx !== -1) {
+        // Si se hace clic con el botón derecho o Alt + Click, lo borramos
+        // O simplemente lo borramos y cancelamos el dibujo de uno nuevo
+        if (confirm("¿Eliminar este recuadro de censura?")) {
+          state.redactions.splice(clickedIdx, 1);
+          redrawOverlays();
+          renderRedactionList();
+          toast('Censura eliminada', 'info');
+          return; // Detenemos aquí para que no empiece a dibujar uno nuevo
+        }
+      }
+      // --- FIN LÓGICA DE SELECCIÓN ---
 
-// ─────────────────── Draw on canvas ───────────────────
-// Actualiza el evento mousedown existente
-drawCanvas.addEventListener('mousedown', e => {
-  if (!state.fileId) return;
+      if (state.mode !== 'rect') return;
 
-  const r = drawCanvas.getBoundingClientRect();
-  const mouseX = (e.clientX - r.left) / state.pageScale;
-  const mouseY = (e.clientY - r.top) / state.pageScale;
+      state.drawing = true;
+      state.startX = e.clientX - r.left;
+      state.startY = e.clientY - r.top;
+    });
 
-  // --- NUEVA LÓGICA DE SELECCIÓN/ELIMINACIÓN ---
-  // Buscamos si el clic ha caído dentro de algún rectángulo existente en la página actual
-  const clickedIdx = state.redactions.findIndex(red => {
-    if (red.page !== state.currentPage) return false;
-    const [x0, y0, x1, y1] = red.rect;
-    return mouseX >= x0 && mouseX <= x1 && mouseY >= y0 && mouseY <= y1;
-  });
+    drawCanvas.addEventListener('mousemove', e => {
+      const r = drawCanvas.getBoundingClientRect();
+      const mx = e.clientX - r.left;
+      const my = e.clientY - r.top;
 
-  if (clickedIdx !== -1) {
-    // Si se hace clic con el botón derecho o Alt + Click, lo borramos
-    // O simplemente lo borramos y cancelamos el dibujo de uno nuevo
-    if (confirm("¿Eliminar este recuadro de censura?")) {
-        state.redactions.splice(clickedIdx, 1);
+      // 1. Lógica para el cursor (puntero o cruz)
+      if (!state.drawing) {
+        const mouseX_scaled = mx / state.pageScale;
+        const mouseY_scaled = my / state.pageScale;
+        const isOver = state.redactions.some(red => {
+          if (red.page !== state.currentPage) return false;
+          const [x0, y0, x1, y1] = red.rect;
+          return mouseX_scaled >= x0 && mouseX_scaled <= x1 && mouseY_scaled >= y0 && mouseY_scaled <= y1;
+        });
+        drawCanvas.style.cursor = isOver ? 'pointer' : 'crosshair';
+        return;
+      }
+
+      // 2. Lógica de dibujo mientras se arrastra
+      if (state.drawing) {
+        redrawOverlays(); // Limpia y dibuja las existentes
+
+        const [cr, cg, cb] = state.redactColor;
+        const w = mx - state.startX;
+        const h = my - state.startY;
+
+        // Dibujamos el relleno semi-transparente
+        dCtx.fillStyle = `rgba(${Math.round(cr * 255)},${Math.round(cg * 255)},${Math.round(cb * 255)}, 0.4)`;
+        dCtx.fillRect(state.startX, state.startY, w, h);
+
+        // Dibujamos el contorno para que se vea bien el borde
+        dCtx.strokeStyle = `rgb(${Math.round(cr * 255)},${Math.round(cg * 255)},${Math.round(cb * 255)})`;
+        dCtx.lineWidth = 2;
+        dCtx.setLineDash([5, 5]); // Opcional: hace que el borde sea punteado mientras dibujas
+        dCtx.strokeRect(state.startX, state.startY, w, h);
+        dCtx.setLineDash([]); // Resetear el estilo de línea
+      }
+    });
+
+    drawCanvas.addEventListener('mouseup', e => {
+      if (!state.drawing) return;
+      state.drawing = false;
+      const r = drawCanvas.getBoundingClientRect();
+      const endX = e.clientX - r.left;
+      const endY = e.clientY - r.top;
+
+      const sc = state.pageScale;
+      const x0 = Math.min(state.startX, endX) / sc;
+      const y0 = Math.min(state.startY, endY) / sc;
+      const x1 = Math.max(state.startX, endX) / sc;
+      const y1 = Math.max(state.startY, endY) / sc;
+
+      if ((x1 - x0) < 3 || (y1 - y0) < 3) { redrawOverlays(); return; }
+
+      state.redactions.push({
+        page: state.currentPage,
+        rect: [x0, y0, x1, y1],
+        color: [...state.redactColor],
+        label: `Rectángulo p.${state.currentPage + 1}`,
+      });
+
+      redrawOverlays();
+      renderRedactionList();
+      toast('Área de censura añadida', 'info', 1500);
+    });
+
+    drawCanvas.addEventListener('mouseleave', () => {
+      if (state.drawing) { state.drawing = false; redrawOverlays(); }
+    });
+
+    // ─────────────────── Search ───────────────────
+    searchBtn.addEventListener('click', searchAndAdd);
+    searchInput.addEventListener('keydown', e => { if (e.key === 'Enter') searchAndAdd(); });
+
+    async function searchAndAdd() {
+      const term = searchInput.value.trim();
+      if (!term || !state.fileId) return;
+
+      searchBtn.disabled = true;
+      searchBtn.innerHTML = '<div class="spinner"></div>';
+
+      try {
+        const res = await fetch('/api/search_text', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ file_id: state.fileId, text: term }),
+        });
+        const data = await res.json();
+        if (!res.ok) { toast(data.error || 'Error al buscar', 'error'); return; }
+
+        if (data.count === 0) {
+          searchResults.textContent = `No se encontró "${term}" en el documento.`;
+          searchResults.style.display = '';
+          toast('Texto no encontrado', 'info');
+          return;
+        }
+
+        // Add to searchTerms if not already present
+        if (!state.searchTerms.includes(term)) {
+          state.searchTerms.push(term);
+        }
+
+        // Also add as individual rect redactions for visual preview
+        data.matches.forEach(m => {
+          state.redactions.push({
+            page: m.page,
+            rect: m.rect,
+            color: [0, 0, 0],
+            label: `"${term}" p.${m.page + 1}`,
+            fromSearch: true,
+          });
+        });
+
+        searchResults.textContent = `✓ ${data.count} coincidencia(s) de "${term}" añadidas.`;
+        searchResults.style.display = '';
+        searchInput.value = '';
         redrawOverlays();
         renderRedactionList();
-        toast('Censura eliminada', 'info');
-        return; // Detenemos aquí para que no empiece a dibujar uno nuevo
+        toast(`${data.count} coincidencias añadidas`, 'success');
+      } catch (err) {
+        toast('Error de red', 'error');
+      } finally {
+        searchBtn.disabled = false;
+        searchBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Buscar en todo el PDF`;
+      }
     }
-  }
-  // --- FIN LÓGICA DE SELECCIÓN ---
 
-  if (state.mode !== 'rect') return;
-  
-  state.drawing = true;
-  state.startX = e.clientX - r.left;
-  state.startY = e.clientY - r.top;
-});
+    // ─────────────────── Redaction list ───────────────────
+    function renderRedactionList() {
+      redCount.textContent = state.redactions.length;
+      clearAllBtn.style.display = state.redactions.length ? '' : 'none';
+      redactionList.innerHTML = '';
 
-drawCanvas.addEventListener('mousemove', e => {
-  const r = drawCanvas.getBoundingClientRect();
-  const mx = e.clientX - r.left;
-  const my = e.clientY - r.top;
+      if (!state.redactions.length) {
+        redactionList.innerHTML = '<p style="font-size:.8rem;color:var(--muted)">Sin censuras aún.</p>';
+        return;
+      }
 
-  // 1. Lógica para el cursor (puntero o cruz)
-  if (!state.drawing) {
-    const mouseX_scaled = mx / state.pageScale;
-    const mouseY_scaled = my / state.pageScale;
-    const isOver = state.redactions.some(red => {
-      if (red.page !== state.currentPage) return false;
-      const [x0, y0, x1, y1] = red.rect;
-      return mouseX_scaled >= x0 && mouseX_scaled <= x1 && mouseY_scaled >= y0 && mouseY_scaled <= y1;
+      state.redactions.forEach((red, idx) => {
+        const [cr, cg, cb] = red.color;
+        const item = document.createElement('div');
+        item.className = 'redaction-item';
+        item.innerHTML = `
+      <div class="dot" style="background:rgb(${Math.round(cr * 255)},${Math.round(cg * 255)},${Math.round(cb * 255)})"></div>
+      <div class="info"><strong>${red.label}</strong><br/>${Math.round(red.rect[2] - red.rect[0])}×${Math.round(red.rect[3] - red.rect[1])} px</div>
+      <button class="del-btn" data-idx="${idx}">✕</button>`;
+        redactionList.appendChild(item);
+      });
+
+      redactionList.querySelectorAll('.del-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = parseInt(btn.dataset.idx);
+          state.redactions.splice(idx, 1);
+          redrawOverlays();
+          renderRedactionList();
+        });
+      });
+    }
+
+    clearAllBtn.addEventListener('click', () => {
+      state.redactions = [];
+      state.searchTerms = [];
+      redrawOverlays();
+      renderRedactionList();
+      toast('Todas las censuras eliminadas', 'info');
     });
-    drawCanvas.style.cursor = isOver ? 'pointer' : 'crosshair';
-    return; 
+
+    // ─────────────────── Export ───────────────────
+    exportBtn.addEventListener('click', async () => {
+      if (!state.fileId) return;
+      if (!state.redactions.length) {
+        toast('No hay censuras definidas', 'error'); return;
+      }
+
+      const exportBtn = document.getElementById('exportBtn');
+      const originalExportBtnHTML = exportBtn.innerHTML;
+
+      exportBtn.disabled = true;
+      exportBtn.innerHTML = '<div class="spinner"></div> Procesando…';
+
+      // ENVIAR SOLO LOS RECUADROS VISIBLES
+      // Filtramos todas las redacciones (sean manuales o de búsqueda) 
+      // para que el servidor las aplique una a una por coordenadas.
+      const allRects = state.redactions.map(r => ({
+        page: r.page,
+        rect: r.rect,
+        color: r.color
+      }));
+
+      try {
+        const res = await fetch('/api/censor', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            file_id: state.fileId,
+            redactions: allRects,
+            search_terms: [], // ENVIAR VACÍO para evitar que el servidor genere recuadros borrados
+          }),
+        });
+
+        if (!res.ok) {
+          const data = await res.json();
+          toast(data.error || 'Error al censurar', 'error');
+          return;
+        }
+
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+
+        const nombreFinal = `${state.originalName}_censurado.pdf`;
+        a.download = nombreFinal;
+        a.href = url;
+        a.click();
+        URL.revokeObjectURL(url);
+        toast('PDF censurado descargado', 'success');
+      } catch (err) {
+        toast('Error de red al exportar', 'error');
+      } finally {
+        exportBtn.disabled = false;
+
+        // Estado de éxito visible
+        exportBtn.innerHTML = '✔ PDF descargado';
+
+        // Restaurar SIEMPRE el contenido original
+        setTimeout(() => {
+          exportBtn.innerHTML = originalExportBtnHTML;
+        }, 2000);
+      }
+    });
+
+    // ─────────────────── Auto-pattern checkboxes ───────────────────
+async function togglePattern(patternKey, checkbox, badge) {
+  if (!state.fileId) { checkbox.checked = false; return; }
+
+  // Si se desmarca, eliminar las redacciones de ese patrón
+  if (!checkbox.checked) {
+    state.redactions = state.redactions.filter(r => r.patternKey !== patternKey);
+    badge.style.display = 'none';
+    redrawOverlays();
+    renderRedactionList();
+    return;
   }
 
-  // 2. Lógica de dibujo mientras se arrastra
-  if (state.drawing) {
-    redrawOverlays(); // Limpia y dibuja las existentes
-    
-    const [cr, cg, cb] = state.redactColor;
-    const w = mx - state.startX;
-    const h = my - state.startY;
-
-    // Dibujamos el relleno semi-transparente
-    dCtx.fillStyle = `rgba(${Math.round(cr*255)},${Math.round(cg*255)},${Math.round(cb*255)}, 0.4)`;
-    dCtx.fillRect(state.startX, state.startY, w, h);
-
-    // Dibujamos el contorno para que se vea bien el borde
-    dCtx.strokeStyle = `rgb(${Math.round(cr*255)},${Math.round(cg*255)},${Math.round(cb*255)})`;
-    dCtx.lineWidth = 2;
-    dCtx.setLineDash([5, 5]); // Opcional: hace que el borde sea punteado mientras dibujas
-    dCtx.strokeRect(state.startX, state.startY, w, h);
-    dCtx.setLineDash([]); // Resetear el estilo de línea
-  }
-});
-
-drawCanvas.addEventListener('mouseup', e => {
-  if (!state.drawing) return;
-  state.drawing = false;
-  const r = drawCanvas.getBoundingClientRect();
-  const endX = e.clientX - r.left;
-  const endY = e.clientY - r.top;
-
-  const sc = state.pageScale;
-  const x0 = Math.min(state.startX, endX) / sc;
-  const y0 = Math.min(state.startY, endY) / sc;
-  const x1 = Math.max(state.startX, endX) / sc;
-  const y1 = Math.max(state.startY, endY) / sc;
-
-  if ((x1 - x0) < 3 || (y1 - y0) < 3) { redrawOverlays(); return; }
-
-  state.redactions.push({
-    page: state.currentPage,
-    rect: [x0, y0, x1, y1],
-    color: [...state.redactColor],
-    label: `Rectángulo p.${state.currentPage + 1}`,
-  });
-
-  redrawOverlays();
-  renderRedactionList();
-  toast('Área de censura añadida', 'info', 1500);
-});
-
-drawCanvas.addEventListener('mouseleave', () => {
-  if (state.drawing) { state.drawing = false; redrawOverlays(); }
-});
-
-// ─────────────────── Search ───────────────────
-searchBtn.addEventListener('click', searchAndAdd);
-searchInput.addEventListener('keydown', e => { if (e.key === 'Enter') searchAndAdd(); });
-
-async function searchAndAdd() {
-  const term = searchInput.value.trim();
-  if (!term || !state.fileId) return;
-
-  searchBtn.disabled = true;
-  searchBtn.innerHTML = '<div class="spinner"></div>';
-
+  checkbox.disabled = true;
   try {
-    const res = await fetch('/api/search_text', {
+    const res = await fetch('/api/search_pattern', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ file_id: state.fileId, text: term }),
+      body: JSON.stringify({ file_id: state.fileId, pattern: patternKey }),
     });
     const data = await res.json();
-    if (!res.ok) { toast(data.error || 'Error al buscar', 'error'); return; }
+    if (!res.ok) { toast(data.error || 'Error al buscar patrón', 'error'); checkbox.checked = false; return; }
 
     if (data.count === 0) {
-      searchResults.textContent = `No se encontró "${term}" en el documento.`;
-      searchResults.style.display = '';
-      toast('Texto no encontrado', 'info');
+      toast('No se encontraron coincidencias', 'info');
+      checkbox.checked = false;
       return;
     }
 
-    // Add to searchTerms if not already present
-    if (!state.searchTerms.includes(term)) {
-      state.searchTerms.push(term);
-    }
-
-    // Also add as individual rect redactions for visual preview
+    const labels = { dni_nie: 'DNI/NIE', email: 'Email' };
     data.matches.forEach(m => {
       state.redactions.push({
         page: m.page,
         rect: m.rect,
         color: [0, 0, 0],
-        label: `"${term}" p.${m.page + 1}`,
-        fromSearch: true,
+        label: `${labels[patternKey]}: ${m.found} p.${m.page + 1}`,
+        patternKey,
       });
     });
 
-    searchResults.textContent = `✓ ${data.count} coincidencia(s) de "${term}" añadidas.`;
-    searchResults.style.display = '';
-    searchInput.value = '';
+    badge.textContent = data.count;
+    badge.style.display = 'inline-block';
     redrawOverlays();
     renderRedactionList();
-    toast(`${data.count} coincidencias añadidas`, 'success');
+    toast(`${data.count} ${labels[patternKey]} encontrados`, 'success');
   } catch (err) {
     toast('Error de red', 'error');
+    checkbox.checked = false;
   } finally {
-    searchBtn.disabled = false;
-    searchBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Buscar en todo el PDF`;
+    checkbox.disabled = false;
   }
 }
 
-// ─────────────────── Redaction list ───────────────────
-function renderRedactionList() {
-  redCount.textContent = state.redactions.length;
-  clearAllBtn.style.display = state.redactions.length ? '' : 'none';
-  redactionList.innerHTML = '';
-
-  if (!state.redactions.length) {
-    redactionList.innerHTML = '<p style="font-size:.8rem;color:var(--muted)">Sin censuras aún.</p>';
-    return;
-  }
-
-  state.redactions.forEach((red, idx) => {
-    const [cr, cg, cb] = red.color;
-    const item = document.createElement('div');
-    item.className = 'redaction-item';
-    item.innerHTML = `
-      <div class="dot" style="background:rgb(${Math.round(cr*255)},${Math.round(cg*255)},${Math.round(cb*255)})"></div>
-      <div class="info"><strong>${red.label}</strong><br/>${Math.round(red.rect[2]-red.rect[0])}×${Math.round(red.rect[3]-red.rect[1])} px</div>
-      <button class="del-btn" data-idx="${idx}">✕</button>`;
-    redactionList.appendChild(item);
-  });
-
-  redactionList.querySelectorAll('.del-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const idx = parseInt(btn.dataset.idx);
-      state.redactions.splice(idx, 1);
-      redrawOverlays();
-      renderRedactionList();
-    });
-  });
-}
-
-clearAllBtn.addEventListener('click', () => {
-  state.redactions = [];
-  state.searchTerms = [];
-  redrawOverlays();
-  renderRedactionList();
-  toast('Todas las censuras eliminadas', 'info');
+document.getElementById('chkDni').addEventListener('change', function () {
+  togglePattern('dni_nie', this, document.getElementById('dniBadge'));
 });
-
-// ─────────────────── Export ───────────────────
-exportBtn.addEventListener('click', async () => {
-  if (!state.fileId) return;
-  if (!state.redactions.length) {
-    toast('No hay censuras definidas', 'error'); return;
-  }
-
-const exportBtn   = document.getElementById('exportBtn');
-const originalExportBtnHTML = exportBtn.innerHTML;
-  
-  exportBtn.disabled = true;
-  exportBtn.innerHTML = '<div class="spinner"></div> Procesando…';
-
-  // ENVIAR SOLO LOS RECUADROS VISIBLES
-  // Filtramos todas las redacciones (sean manuales o de búsqueda) 
-  // para que el servidor las aplique una a una por coordenadas.
-  const allRects = state.redactions.map(r => ({ 
-    page: r.page, 
-    rect: r.rect, 
-    color: r.color 
-  }));
-
-  try {
-    const res = await fetch('/api/censor', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        file_id: state.fileId,
-        redactions: allRects,
-        search_terms: [], // ENVIAR VACÍO para evitar que el servidor genere recuadros borrados
-      }),
-    });
-
-    if (!res.ok) {
-      const data = await res.json();
-      toast(data.error || 'Error al censurar', 'error');
-      return;
-    }
-
-    const blob = await res.blob();
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-
-    const nombreFinal = `${state.originalName}_censurado.pdf`;
-    a.download = nombreFinal;
-    a.href = url;
-    a.click();
-    URL.revokeObjectURL(url);
-    toast('PDF censurado descargado', 'success');
-  } catch (err) {
-    toast('Error de red al exportar', 'error');
-  } finally {
-  exportBtn.disabled = false;
-
-  // Estado de éxito visible
-  exportBtn.innerHTML = '✔ PDF descargado';
-
-  // Restaurar SIEMPRE el contenido original
-  setTimeout(() => {
-    exportBtn.innerHTML = originalExportBtnHTML;
-  }, 2000);
-}
+document.getElementById('chkEmail').addEventListener('change', function () {
+  togglePattern('email', this, document.getElementById('emailBadge'));
 });
-</script>
+  </script>
 </body>
+
 </html>

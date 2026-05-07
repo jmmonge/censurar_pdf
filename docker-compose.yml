@@ -7,7 +7,10 @@ services:
     volumes:
       - pdf_uploads:/app/uploads
       - pdf_outputs:/app/outputs
+      - ./logs:/app/logs
+      - /etc/localtime:/etc/localtime:ro
     environment:
+      - TZ=Europe/Madrid  # Fuerza la zona horaria de Madrid
       - FLASK_ENV=production
       - MAX_UPLOAD_MB=250
       - SECRET_KEY=cambia_esta_clave_secreta_en_produccion

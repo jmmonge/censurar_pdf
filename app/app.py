@@ -16,6 +16,10 @@ from pdf2image import convert_from_path
 import unicodedata
 import re
 
+import logging
+from logging.handlers import RotatingFileHandler
+import time
+
 # ─────────────────────────── Configuración ───────────────────────────
 app = Flask(__name__)
 
@@ -34,6 +38,28 @@ REDACTION_COLOR = (0, 0, 0)
 HIGHLIGHT_COLOR = (1, 1, 0, 0.3)
 SEARCH_PADDING = 1
 
+# Configuración del Logger
+log_formatter = logging.Formatter(
+    '[%(asctime)s] %(levelname)s | IP: %(client_ip)s | Fichero: %(filename_src)s | Tamaño: %(filesize)s KB | Accion: %(action)s | UA: %(user_agent)s'
+)
+
+# El log se guardará en "log_uso.log"
+# maxBytes=1MB, backupCount=5 (mantendrá hasta 5 archivos viejos de historial)
+LOGS_DIR = os.path.join(os.path.dirname(__file__), 'logs')
+os.makedirs(LOGS_DIR, exist_ok=True)
+log_path = os.path.join(LOGS_DIR, 'log_uso.log')
+log_handler = RotatingFileHandler(log_path, maxBytes=1_000_000, backupCount=5, encoding='utf-8')
+log_handler.setFormatter(log_formatter)
+log_handler.setLevel(logging.INFO)
+
+app_log = logging.getLogger('app_stats')
+app_log.setLevel(logging.INFO)
+app_log.addHandler(log_handler)
+
+stats_log = logging.getLogger('app_stats') 
+stats_log.setLevel(logging.INFO)
+stats_log.addHandler(log_handler)
+stats_log.propagate = False
 
 # Estado OCR compartido entre hilos (file_id -> "running" | "done" | "error")
 ocr_status: dict[str, str] = {}
@@ -43,6 +69,18 @@ ocr_cache: dict[str, list] = {}
 
 
 # ─────────────────────────── Helpers ─────────────────────────────────
+def registrar_evento(action, filename_src="N/A", filesize="0"):
+    """Registra un evento en el log con metadatos automáticos."""
+    extra_data = {
+        'client_ip': request.remote_addr if request else "Servidor",
+        'filename_src': filename_src,
+        'filesize': filesize,
+        'action': action,
+        'user_agent': request.headers.get('User-Agent', 'Desconocido') if request else "Interno"
+    }
+    # Usamos stats_log, que es el que tiene el formato especial
+    stats_log.info(f"Accion: {action}", extra=extra_data)
+
 def allowed_file(filename: str) -> bool:
     return (
         "." in filename
@@ -290,7 +328,16 @@ def upload_pdf():
     file_id = uuid.uuid4().hex
     upload_path = app.config["UPLOAD_FOLDER"] / f"{file_id}_{safe_name}"
     file.save(str(upload_path))
+    
+    size_kb = round(upload_path.stat().st_size / 1024, 1)
 
+    #Registramos el evento (ya existe size_kb)
+    registrar_evento(
+        action="UPLOAD", 
+        filename_src=file.filename, 
+        filesize=str(size_kb),
+    )
+ 
     try:
         doc = fitz.open(str(upload_path))
         page_count = len(doc)
@@ -549,9 +596,12 @@ def censor_pdf():
             clean=True,
             linear=True,
         )
-        doc.close()
 
         original_name = upload_path.name.replace(file_id + "_", "")
+
+        registrar_evento(action="DOWNLOAD_CENSORED_PDF",filename_src=f"censurado_{original_name}")
+        doc.close()
+        
         return send_file(
             str(output_path),
             mimetype="application/pdf",
@@ -568,6 +618,66 @@ def censor_pdf():
 def too_large(e):
     return jsonify({"error": "Archivo demasiado grande"}), 413
 
+# ─────────────────────────── Patrones automáticos ────────────────────
+
+PATTERNS = {
+    "dni_nie": re.compile(
+        #r'(\b[xyz]?(?=(?:\D*\d){8}\D*$)(?:[0-9]{1,3}\.){0,3}[0-9]{1,3}[a-z]\b)|(\b[0-9]{8}[A-Z]\b)',
+        r'(\b([XYZ\d])[\s\.\-]?([0-9]{1,3}(?:\.?[0-9]{3}){2}|[0-9]{1,7})[\s\.\-]?([A-Z])\b)',
+        re.IGNORECASE
+    ),
+    "email": re.compile(
+        r'\b[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}\b'
+    ),
+}
+@app.route("/api/search_pattern", methods=["POST"])
+def search_pattern():
+    data = request.get_json(silent=True) or {}
+    file_id = data.get("file_id", "")
+    pattern_key = data.get("pattern", "")   # "dni_nie" | "email"
+
+    if pattern_key not in PATTERNS:
+        return jsonify({"error": "Patrón desconocido"}), 400
+
+    matches_list = list(app.config["UPLOAD_FOLDER"].glob(f"{file_id}_*"))
+    if not matches_list:
+        return jsonify({"error": "Archivo no encontrado"}), 404
+
+    pdf_path = matches_list[0]
+    pattern = PATTERNS[pattern_key]
+    all_matches = []
+
+    # ── Esperar OCR si está en curso ──────────────────────────────────
+    with ocr_lock:
+        status = ocr_status.get(file_id)
+        event = ocr_events.get(file_id)
+    if status == "running" and event is not None:
+        event.wait()
+
+    try:
+        doc = fitz.open(str(pdf_path))
+        for page_num in range(len(doc)):
+            page = doc[page_num]
+            # get_text("words") devuelve (x0, y0, x1, y1, word, block, line, pos)
+            words = page.get_text("words")
+            for w in words:
+                word_text = w[4]
+                if pattern.search(word_text):
+                    all_matches.append({
+                        "page": page_num,
+                        "rect": [
+                            max(0, w[0] - SEARCH_PADDING),
+                            max(0, w[1] - SEARCH_PADDING),
+                            w[2] + SEARCH_PADDING,
+                            w[3] + SEARCH_PADDING,
+                        ],
+                        "found": word_text,
+                    })
+        doc.close()
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    return jsonify({"count": len(all_matches), "matches": all_matches})
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
