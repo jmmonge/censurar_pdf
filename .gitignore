@@ -1,1 +1,3 @@
 logs/*.log
+pdf_outputs/
+pdf_uploads/
