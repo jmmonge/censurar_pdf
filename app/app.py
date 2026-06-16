@@ -20,6 +20,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 import time
 from logs_admin import logs_bp
+import socket
 
 # ─────────────────────────── Configuración ───────────────────────────
 app = Flask(__name__)
@@ -72,8 +73,16 @@ ocr_cache: dict[str, list] = {}
 # ─────────────────────────── Helpers ─────────────────────────────────
 def registrar_evento(action, filename_src="N/A", filesize="0"):
     """Registra un evento en el log con metadatos automáticos."""
+    try:
+        ip = request.remote_addr if request else "Servidor"
+        hostname = socket.getfqdn(ip) if ip != "Servidor" else "Servidor"
+        if hostname == ip:          # no se pudo resolver
+            hostname = "N/A"
+    except Exception:
+        ip, hostname = "N/A", "N/A"
+
     extra_data = {
-        'client_ip': request.remote_addr if request else "Servidor",
+        'client_ip': f"{ip} ({hostname})",
         'filename_src': filename_src,
         'filesize': filesize,
         'action': action,
@@ -599,6 +608,7 @@ def censor_pdf():
         )
 
         original_name = upload_path.name.replace(file_id + "_", "")
+
 
         registrar_evento(action="DOWNLOAD",filename_src=f"censurado_{original_name}")
         doc.close()
