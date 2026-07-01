@@ -91,6 +91,74 @@ def registrar_evento(action, filename_src="N/A", filesize="0"):
     # Usamos stats_log, que es el que tiene el formato especial
     stats_log.info(f"Accion: {action}", extra=extra_data)
 
+def find_exact_text_rect(page, search_text):
+    """
+    Busca el rectángulo de un texto respetando mayúsculas/minúsculas
+    """
+    words = page.get_text("words")
+    
+    # Buscar palabra por palabra con coincidencia exacta
+    for i, w in enumerate(words):
+        if w[4].strip() == search_text:
+            return fitz.Rect(w[0], w[1], w[2], w[3])
+    
+    # Si el texto tiene múltiples palabras
+    parts = search_text.split()
+    if len(parts) >= 2:
+        for i in range(len(words) - len(parts) + 1):
+            matched = True
+            for j, part in enumerate(parts):
+                if words[i+j][4].strip() != part:
+                    matched = False
+                    break
+            
+            if matched:
+                x0 = min(float(words[i+k][0]) for k in range(len(parts)))
+                y0 = min(float(words[i+k][1]) for k in range(len(parts)))
+                x1 = max(float(words[i+k][2]) for k in range(len(parts)))
+                y1 = max(float(words[i+k][3]) for k in range(len(parts)))
+                return fitz.Rect(x0, y0, x1, y1)
+    
+    return None
+
+
+def get_text_rect(page, text_to_find):
+    """
+    Encuentra el rectángulo exacto de un texto en una página.
+    """
+    # Buscar el texto exacto
+    rects = page.search_for(text_to_find)
+    if rects:
+        return rects[0]
+    
+    # Si no encuentra, buscar por palabras
+    words = page.get_text("words")
+    parts = text_to_find.split()
+    
+    if len(parts) < 2:
+        # Buscar palabra individual
+        for w in words:
+            if w[4].strip() == text_to_find:
+                return fitz.Rect(w[0], w[1], w[2], w[3])
+        return None
+    
+    # Buscar secuencia de palabras
+    for i in range(len(words) - len(parts) + 1):
+        matched = True
+        for j, part in enumerate(parts):
+            if words[i+j][4].strip().upper() != part.upper():
+                matched = False
+                break
+        
+        if matched:
+            x0 = min(float(words[i+k][0]) for k in range(len(parts)))
+            y0 = min(float(words[i+k][1]) for k in range(len(parts)))
+            x1 = max(float(words[i+k][2]) for k in range(len(parts)))
+            y1 = max(float(words[i+k][3]) for k in range(len(parts)))
+            return fitz.Rect(x0, y0, x1, y1)
+    
+    return None
+
 def allowed_file(filename: str) -> bool:
     return (
         "." in filename
@@ -156,7 +224,7 @@ def run_ocr_and_replace(file_id: str, pdf_path: Path):
                 img,
                 lang='spa',
                 extension='pdf',
-                config='--psm 3'
+                config='--psm 11'
             )
 
             # Abrir el PDF que generó tesseract (tiene imagen + texto invisible)
@@ -251,7 +319,7 @@ def search_in_ocr_pdf(file_id: str, pdf_path: Path, search_term: str) -> list:
             ocr_data = pytesseract.image_to_data(
                 img, lang='spa',
                 output_type=pytesseract.Output.DICT,
-                config='--psm 3'
+                config='--psm 11'
             )
 
             for i, word in enumerate(ocr_data['text']):
@@ -631,21 +699,38 @@ def too_large(e):
 
 # ─────────────────────────── Patrones automáticos ────────────────────
 
+
 PATTERNS = {
     "dni_nie": re.compile(
-        #r'(\b[xyz]?(?=(?:\D*\d){8}\D*$)(?:[0-9]{1,3}\.){0,3}[0-9]{1,3}[a-z]\b)|(\b[0-9]{8}[A-Z]\b)',
-        r'(\b([XYZ\d])[\s\.\-]?([0-9]{1,3}(?:\.?[0-9]{3}){2}|[0-9]{1,7})(?:[\s\.\-]?([A-Z]))?\b)',
+        r'(?<![0-9A-Za-z])(?:'  # Lookbehind para evitar falsos positivos
+        # DNI con letra (8 dígitos + letra)
+        r'(?:(?<![0-9])[0-9]{8}(?![0-9])[\s\.\-]?[A-Za-z])'
+        r'|'  # O
+        # NIE (X/Y/Z + 7 dígitos + letra)
+        r'(?:[XYZ][\s\.\-]?[0-9]{7}[\s\.\-]?[A-Za-z])'
+        r'|'  # O
+        # DNI sin letra (8 dígitos)
+        r'(?:(?<![0-9])[0-9]{8}(?![0-9]))'
+        r'|'  # O
+        # DNI sin letra con puntos (ej: 52.328.210)
+        r'(?:(?<![0-9])[0-9]{1,3}\.[0-9]{3}\.[0-9]{3}(?![0-9]))'
+        r')(?![0-9A-Za-z])',  # Lookahead para evitar falsos positivos
         re.IGNORECASE
     ),
     "email": re.compile(
         r'\b[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}\b'
     ),
+    "cuenta_corriente": re.compile(
+        r'(?<![0-9A-Z])[A-Z]{2}[0-9]{2}(?:[-\s]?[0-9]{4}){5}(?![0-9A-Z])',
+        re.IGNORECASE
+    )    
 }
+
 @app.route("/api/search_pattern", methods=["POST"])
 def search_pattern():
     data = request.get_json(silent=True) or {}
     file_id = data.get("file_id", "")
-    pattern_key = data.get("pattern", "")   # "dni_nie" | "email"
+    pattern_key = data.get("pattern", "")
 
     if pattern_key not in PATTERNS:
         return jsonify({"error": "Patrón desconocido"}), 400
@@ -669,26 +754,44 @@ def search_pattern():
         doc = fitz.open(str(pdf_path))
         for page_num in range(len(doc)):
             page = doc[page_num]
-            # get_text("words") devuelve (x0, y0, x1, y1, word, block, line, pos)
-            words = page.get_text("words")
-            for w in words:
-                word_text = w[4]
-                if pattern.search(word_text):
-                    all_matches.append({
+            
+            # Obtener el texto completo de la página
+            text = page.get_text()
+            
+            # Almacenamos los textos únicos encontrados por el patrón en esta página
+            found_set = set()
+            for match in pattern.finditer(text):
+                found_set.add(match.group())
+            
+            # Buscamos TODAS las apariciones de cada texto encontrado
+            for found_text in found_set:
+                if not found_text.strip():
+                    continue
+                
+                # page.search_for devuelve una lista con los rectángulos de CADA coincidencia
+                rects = page.search_for(found_text)
+                
+                for rect in rects:
+                    candidate = {
                         "page": page_num,
                         "rect": [
-                            max(0, w[0] - SEARCH_PADDING),
-                            max(0, w[1] - SEARCH_PADDING),
-                            w[2] + SEARCH_PADDING,
-                            w[3] + SEARCH_PADDING,
+                            max(0, rect.x0 - SEARCH_PADDING),
+                            max(0, rect.y0 - SEARCH_PADDING),
+                            rect.x1 + SEARCH_PADDING,
+                            rect.y1 + SEARCH_PADDING,
                         ],
-                        "found": word_text,
-                    })
+                        "found": found_text,
+                    }
+                    
+                    # Evitar duplicados exactos en la lista por si se solapan búsquedas
+                    if candidate not in all_matches:
+                        all_matches.append(candidate)
+        
         doc.close()
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
     return jsonify({"count": len(all_matches), "matches": all_matches})
-
+    
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)

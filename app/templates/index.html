@@ -634,6 +634,15 @@
             </label>
           </div>
 
+          <div class="checkbox-row">
+            <input type="checkbox" id="chkcuenta" />
+            <label for="chkcuenta" style="margin:0;color:var(--text)">
+              Cuenta corriente
+              <span id="cuentaBadge" class="badge" style="display:none">0</span>
+            </label>
+          </div>
+
+
           <p style="font-size:.77rem;color:var(--muted)">
             Marca para buscar y censurar automáticamente en todo el documento.
           </p>
@@ -1144,6 +1153,12 @@
       state.searchTerms = [];
       redrawOverlays();
       renderRedactionList();
+      document.getElementById('chkDni').checked = false;
+      document.getElementById('chkEmail').checked = false;
+      document.getElementById('chkcuenta').checked = false;
+      document.getElementById('dniBadge').style.display = 'none';
+      document.getElementById('emailBadge').style.display = 'none';
+      document.getElementById('cuentaBadge').style.display = 'none';
       toast('Todas las censuras eliminadas', 'info');
     });
 
@@ -1240,7 +1255,7 @@
           return;
         }
 
-        const labels = { dni_nie: 'DNI/NIE', email: 'Email' };
+        const labels = { dni_nie: 'DNI/NIE', email: 'Email', cuenta_corriente: 'Cuenta corriente' };
         data.matches.forEach(m => {
           state.redactions.push({
             page: m.page,
@@ -1269,6 +1284,9 @@
     });
     document.getElementById('chkEmail').addEventListener('change', function () {
       togglePattern('email', this, document.getElementById('emailBadge'));
+    });
+    document.getElementById('chkcuenta').addEventListener('change', function () {
+      togglePattern('cuenta_corriente', this, document.getElementById('cuentaBadge'));
     });
   </script>
 </body>
